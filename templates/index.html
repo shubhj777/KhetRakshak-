@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KhetRakshak AI (खेतरक्षक AI) — Bihar's Crop Risk Intelligence Platform</title>
+    <meta name="description" content="KhetRakshak AI is a Bihar-first agricultural risk intelligence platform combining Computer Vision, Machine Learning, GIS, weather intelligence and Generative AI. Built for IDEATEX Bootcamp, IIIT Bhagalpur.">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                            950: '#052012'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Leaflet CSS & JS for Bihar GIS Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 pb-mobile-nav">
+
+    <!-- Top Navigation Bar -->
+    <nav class="glass-nav py-2.5 px-4 sm:px-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.switchTab('dashboard')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-800 to-emerald-600 flex items-center justify-center text-white text-xl shadow-md">
+                    🌾
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-lg text-emerald-950 tracking-tight" data-i18n="appName">KhetRakshak AI</span>
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            IDEATEX • IIIT Bhagalpur
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 hidden sm:block">Bihar's Crop Risk Intelligence & Early-Warning Platform</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Location indicator -->
+                <div class="hidden md:flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 shadow-xs">
+                    <span class="text-emerald-600">📍</span>
+                    <span id="nav-location-label">Purnia, Bihar</span>
+                </div>
+
+                <!-- Primary 1-Click Demo Button -->
+                <button id="btn-load-ideatex-demo" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-sm flex items-center gap-1.5 transition-all">
+                    <span>⚡</span>
+                    <span data-i18n="btnDemo">IDEATEX Demo</span>
+                </button>
+
+                <!-- Language Toggle -->
+                <button id="btn-lang-toggle" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 flex items-center gap-1">
+                    <span>🌐</span>
+                    <span id="lang-btn-text">English</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Desktop Navigation Tabs -->
+        <div class="max-w-7xl mx-auto hidden lg:flex items-center gap-1 mt-2.5 pt-2 border-t border-slate-100 overflow-x-auto text-xs font-medium text-slate-600">
+            <button class="nav-tab-btn active px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="dashboard" data-i18n="tabDashboard">Dashboard</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="scanner" data-i18n="tabScanner">📷 Crop Scanner</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="flood" data-i18n="tabFlood">🌊 Flood Risk</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="drought" data-i18n="tabDrought">☀️ Drought & Moisture</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="weather" data-i18n="tabWeather">🌦️ Weather-to-Crop</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="advisor" data-i18n="tabAdvisor">🤖 Ask Advisor</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="voice" data-i18n="tabVoice">🎙️ Voice AI</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="map" data-i18n="tabMap">🗺️ Bihar Risk Map</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="alerts" data-i18n="tabAlerts">🚨 Alerts</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="timeline" data-i18n="tabTimeline">📅 Timeline</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="profile" data-i18n="tabProfile">🧑🌾 My Farm</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="admin" data-i18n="tabAdmin">📊 Admin Surveillance</button>
+            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="about" data-i18n="tabAbout">ℹ️ About / Impact</button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+
+        <!-- HERO / PHILOSOPHY BANNER -->
+        <section class="hero-gradient rounded-3xl p-6 sm:p-8 border border-emerald-100 shadow-soft">
+            <div class="max-w-3xl space-y-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-300 text-emerald-900 text-xs font-bold">
+                    <span>🇮🇳</span>
+                    <span>Built for Bihar. Designed to scale.</span>
+                </div>
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-emerald-950 leading-tight">
+                    Bihar’s AI-Powered Crop Risk Intelligence & Early-Warning Platform
+                </h1>
+                <p class="text-slate-700 text-base sm:text-lg">
+                    Detect crop problems. Predict environmental risks. Get personalized advice. Protect your harvest.
+                </p>
+
+                <!-- Crucial Core Philosophy Card -->
+                <div class="bg-white/90 backdrop-blur-sm border-l-4 border-l-emerald-600 border border-emerald-100 rounded-xl p-4 shadow-xs">
+                    <p class="text-emerald-950 font-bold text-sm sm:text-base italic leading-relaxed" data-i18n="philosophy">
+                        “Weather tells you what is coming. Crop detection tells you what is happening. KhetRakshak tells you what it means for your farm.”
+                    </p>
+                    <div class="mt-2 text-xs text-slate-500 font-medium">
+                        DETECT → PREDICT → UNDERSTAND → ADVISE → PROTECT
+                    </div>
+                </div>
+
+                <!-- CTAs -->
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                    <button onclick="window.switchTab('scanner')" class="btn-primary px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2">
+                        <span>📷</span>
+                        <span data-i18n="scanNow">Analyze My Crop</span>
+                    </button>
+                    <button onclick="window.switchTab('map')" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 shadow-xs flex items-center gap-2">
+                        <span>🗺️</span>
+                        <span data-i18n="exploreMap">Explore Bihar Risk Map</span>
+                    </button>
+                    <button onclick="window.switchTab('voice')" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-200 flex items-center gap-2">
+                        <span>🎙️</span>
+                        <span>Talk to AI (बोलकर पूछें)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Judge 2-Minute Quick Demo Journey Ribbon -->
+            <div class="mt-6 pt-5 border-t border-emerald-200/60 text-xs text-slate-600 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-1 font-semibold text-emerald-900">
+                    <span>⏱️ IDEATEX Judge 2-Min Evaluation Journey:</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">1. Bihar Location</span>
+                    <span>→</span>
+                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">2. Crop Stage</span>
+                    <span>→</span>
+                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">3. Leaf Scan</span>
+                    <span>→</span>
+                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">4. CV Check</span>
+                    <span>→</span>
+                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">5. Risk Score</span>
+                    <span>→</span>
+                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">6. Weather-to-Crop</span>
+                    <span>→</span>
+                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">7. Voice AI</span>
+                    <span>→</span>
+                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">8. GIS Map</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 1: FARMER DASHBOARD -->
+        <section id="section-dashboard" class="app-section space-y-6">
+            <!-- Farmer Profile Banner -->
+            <div class="kr-card p-5 flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-white via-white to-emerald-50/50">
+                <div>
+                    <div class="text-xs uppercase font-bold tracking-wider text-emerald-700" data-i18n="welcomeFarmer">Namaste, Farmer 👋</div>
+                    <h2 id="dash-farmer-name" class="text-2xl font-black text-slate-900 mt-0.5">Ramesh Kumar Yadav (Purnia, Bihar)</h2>
+                    <p id="dash-farm-meta" class="text-xs text-slate-600 mt-1">Maize • Flowering & Tasseling • 3.0 Acres • Sandy Loam Alluvium</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="demo-scenario-select" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 shadow-xs">
+                        <option value="ideatex_purnia_maize">Scenario 1: Purnia Maize (Flowering + Heavy Rain)</option>
+                        <option value="gaya_drought_paddy">Scenario 2: Gaya Paddy (Drought & Water Deficit)</option>
+                        <option value="darbhanga_kamla_flood">Scenario 3: Darbhanga (Kamla River Flood + Blight)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Core Risk Intelligence Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Overall KhetRakshak Score Gauge Card -->
+                <div class="kr-card p-6 flex flex-col items-center justify-center text-center space-y-4">
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500" data-i18n="scoreLabel">Overall KhetRakshak Score</span>
+                    
+                    <div id="score-circle" class="score-circle">
+                        <div class="score-circle-content">
+                            <span id="score-value" class="text-4xl font-black text-slate-900">72</span>
+                            <span class="text-xs font-bold text-slate-400 block -mt-1">/ 100</span>
+                        </div>
+                    </div>
+
+                    <div id="risk-level-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                        HIGH CROP RISK
+                    </div>
+
+                    <p class="text-xs text-slate-500 max-w-[260px]">
+                        Multi-factor index computed from localized river gauges, 48h rainfall forecast, and crop stage vulnerability.
+                    </p>
+                </div>
+
+                <!-- Risk Breakdown Bars -->
+                <div class="kr-card p-6 space-y-4 lg:col-span-2">
+                    <div class="flex items-center justify-between border-b pb-2">
+                        <h3 class="font-bold text-slate-900 text-sm" data-i18n="breakdownTitle">Environmental & Biological Risk Breakdown</h3>
+                        <span class="text-[11px] font-semibold text-slate-500">Scale: 0 (Safe) - 100 (Severe)</span>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <div class="flex justify-between font-semibold text-slate-700 mb-1">
+                                <span>🌊 Flood & Waterlogging Risk</span>
+                                <span id="val-flood" class="text-red-600 font-bold">78/100</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="bar-flood" class="bg-red-500 h-2 rounded-full" style="width: 78%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between font-semibold text-slate-700 mb-1">
+                                <span>🦠 Crop Foliage Disease Spread (Blight)</span>
+                                <span id="val-disease" class="text-amber-600 font-bold">55/100</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="bar-disease" class="bg-amber-500 h-2 rounded-full" style="width: 55%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between font-semibold text-slate-700 mb-1">
+                                <span>☀️ Drought & Soil Moisture Deficit</span>
+                                <span id="val-drought" class="text-emerald-600 font-bold">15/100</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="bar-drought" class="bg-emerald-500 h-2 rounded-full" style="width: 15%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between font-semibold text-slate-700 mb-1">
+                                <span>🌧️ 48-Hour Excess Rain Surge</span>
+                                <span id="val-rain" class="text-red-600 font-bold">84/100</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="bar-rain" class="bg-red-500 h-2 rounded-full" style="width: 84%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between font-semibold text-slate-700 mb-1">
+                                <span>🐛 Pest & Insect Outbreak Risk</span>
+                                <span id="val-pest" class="text-slate-600 font-bold">35/100</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div id="bar-pest" class="bg-slate-400 h-2 rounded-full" style="width: 35%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explainability: Why is it High Risk? + What should I do? -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Why Section -->
+                <div class="kr-card p-5 space-y-3 border-l-4 border-l-amber-500">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🧐</span>
+                        <h4 class="font-bold text-slate-900 text-sm uppercase tracking-wider" data-i18n="whyHigh">Why is this considered High Risk?</h4>
+                    </div>
+                    <ul id="dash-why-reasons" class="space-y-2">
+                        <!-- Populated by app.js -->
+                    </ul>
+                </div>
+
+                <!-- Action Directives Section -->
+                <div class="kr-card p-5 space-y-3 border-l-4 border-l-emerald-600">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🛡️</span>
+                        <h4 class="font-bold text-slate-900 text-sm uppercase tracking-wider" data-i18n="whatToDo">Actionable Field Directives</h4>
+                    </div>
+                    <ul id="dash-actions" class="space-y-2">
+                        <!-- Populated by app.js -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Prominent Weather-to-Crop Card -->
+            <div class="kr-card p-6 bg-gradient-to-r from-emerald-900 to-emerald-950 text-white rounded-2xl shadow-soft">
+                <div class="flex items-center justify-between border-b border-emerald-800 pb-3 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">🌦️</span>
+                        <h3 class="font-bold text-sm sm:text-base text-emerald-100 uppercase tracking-wider" data-i18n="weatherMeaningTitle">
+                            What This Weather Means for Your Farm
+                        </h3>
+                    </div>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-800/80 text-emerald-200">
+                        Weather-to-Crop AI
+                    </span>
+                </div>
+                <p id="dash-weather-meaning" class="text-emerald-100 text-sm sm:text-base leading-relaxed">
+                    Heavy rainfall expected (88.5 mm) during Maize Flowering stage. Pollen washing and root anoxia can decrease cob grain set by up to 50% if submerged over 24 hours.
+                </p>
+                <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                    <span class="px-2.5 py-1 rounded-md bg-red-900/80 text-red-200 font-bold border border-red-700">⛔ HALT IRRIGATION</span>
+                    <span class="px-2.5 py-1 rounded-md bg-amber-900/80 text-amber-200 font-bold border border-amber-700">❌ DO NOT SPRAY (Washout Risk)</span>
+                    <span class="px-2.5 py-1 rounded-md bg-emerald-800 text-emerald-200 font-medium">💧 Soil Moisture: 84% (Saturated)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 2: CROP HEALTH SCANNER -->
+        <section id="section-scanner" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-5">
+                <div class="border-b pb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                            <span>📷</span>
+                            <span>AI Crop Health Scanner</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Real-time Computer Vision quality verification and crop disease diagnosis with safety confidence scoring.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-test-low-confidence" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-100 hover:bg-orange-200 text-orange-800 border border-orange-300">
+                            🧪 Test Low-Confidence Safeguard
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Crop & Stage Selectors -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Select Crop Type:</label>
+                        <select id="scanner-crop-select" class="w-full px-3 py-2 rounded-lg text-sm bg-slate-50 border border-slate-300">
+                            <option value="Maize">Maize (मक्का)</option>
+                            <option value="Paddy">Paddy / Rice (धान)</option>
+                            <option value="Wheat">Wheat (गेहूं)</option>
+                            <option value="Potato">Potato (आलू)</option>
+                            <option value="Mustard">Mustard (सरसों)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Growth Stage:</label>
+                        <select id="scanner-stage-select" class="w-full px-3 py-2 rounded-lg text-sm bg-slate-50 border border-slate-300">
+                            <option value="Flowering & Tasseling">Flowering & Tasseling (मंजर / फूल)</option>
+                            <option value="Vegetative">Vegetative (वानस्पतिक)</option>
+                            <option value="Grain Filling">Grain Filling (दाना भराव)</option>
+                            <option value="Germination">Germination / Seedling (अंकुरण)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 1-Click Field Sample Chips (For easy testing without physical camera) -->
+                <div>
+                    <span class="block text-xs font-bold text-slate-600 mb-2">⚡ Quick Field Test Samples (Click to load):</span>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 font-medium ring-2 ring-emerald-500 bg-emerald-50" data-sample="maize_maydis_blight">
+                            🌽 Maize Maydis Blight (IDEATEX Demo)
+                        </button>
+                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 font-medium" data-sample="paddy_bacterial_blight">
+                            🌾 Paddy Bacterial Blight
+                        </button>
+                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 font-medium" data-sample="healthy_maize">
+                            🌱 Healthy Maize Leaf
+                        </button>
+                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-red-300 bg-red-50 text-red-800 hover:bg-red-100 font-medium" data-sample="blurry_leaf_sample">
+                            ⚠️ Blurry Photo (Test Blur Reject)
+                        </button>
+                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-400 bg-slate-100 text-slate-800 hover:bg-slate-200 font-medium" data-sample="dark_leaf_sample">
+                            🌑 Dark Photo (Test Night Reject)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Upload / Camera Dropzone -->
+                <div id="scanner-dropzone" class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center space-y-3 transition-colors bg-slate-50/50">
+                    <div id="scanner-placeholder" class="space-y-2 hidden">
+                        <div class="text-4xl text-slate-400">📷</div>
+                        <div class="text-sm font-semibold text-slate-700">Drag & drop leaf photo here, or use buttons below</div>
+                        <div class="text-xs text-slate-500">Supports JPG, PNG (Natural daylight recommended)</div>
+                    </div>
+
+                    <!-- Live Image Preview -->
+                    <div class="flex justify-center">
+                        <img id="scanner-preview-img" src="/static/sample_images/maize_maydis_blight.jpg" alt="Leaf Preview" class="max-h-64 rounded-xl shadow-md border border-slate-200 object-cover">
+                        <video id="scanner-camera-video" autoplay playsinline class="max-h-64 rounded-xl shadow-md border border-slate-200 hidden"></video>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <input type="file" id="scanner-file-input" accept="image/*" class="hidden">
+                        <button onclick="document.getElementById('scanner-file-input').click()" class="px-4 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 shadow-xs">
+                            📁 Upload Photo
+                        </button>
+                        <button id="btn-camera-toggle" class="px-4 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 shadow-xs">
+                            📷 Open Camera
+                        </button>
+                        <button id="btn-analyze-scan" class="btn-primary px-6 py-2 rounded-xl text-xs font-bold shadow-md">
+                            🔍 Run AI Diagnostic Scan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Scan Results Container (Step 1 Quality + Step 2 Diagnosis) -->
+                <div id="scan-results-container" class="space-y-4">
+                    <!-- Step 1: Quality Check Output -->
+                    <div class="kr-card p-4 border border-slate-200 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase text-slate-500 tracking-wider">Step 1 — Real-Time Image Quality Check</span>
+                            <span id="scan-quality-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                ✓ QUALITY VERIFIED
+                            </span>
+                        </div>
+                        <p id="scan-quality-msg" class="text-xs text-slate-700 font-medium">
+                            Image quality verified: Good lighting and sharp focus. Proceeding with diagnostic analysis.
+                        </p>
+                        <div id="scan-quality-metrics">
+                            <!-- Injected by scanner.js -->
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Disease Diagnostic Output -->
+                    <div id="scan-disease-card">
+                        <!-- Default Initial Maydis Blight Card for Immediate Viewing -->
+                        <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-xs space-y-3">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                                        Maize • Fungal Pathogen
+                                    </span>
+                                    <h3 class="text-lg font-bold text-slate-900 mt-1">
+                                        Maydis Leaf Blight (मेडीस पर्ण अंगमारी)
+                                    </h3>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xl font-black text-emerald-700">89%</div>
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-wider">AI Confidence</div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                    <span class="text-slate-500">Severity:</span>
+                                    <span class="font-bold text-amber-700 ml-1">Moderate (मध्यम)</span>
+                                </div>
+                                <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                    <span class="text-slate-500">Model Type:</span>
+                                    <span class="font-bold text-slate-800 ml-1">Demo Computer Vision</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-1">Identified Symptoms:</h5>
+                                <ul class="text-xs text-slate-700 space-y-1 list-disc list-inside">
+                                    <li>Small oval to rectangular water-soaked lesions on leaves.</li>
+                                    <li>Lesions elongate between veins into straw-colored necrotic areas.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg">
+                                <div class="text-xs font-bold text-emerald-900 mb-0.5">🌱 Recommended Treatment / Action:</div>
+                                <p class="text-xs text-emerald-800 font-medium">
+                                    Drain standing water immediately. Apply Mancozeb 75% WP @ 2.5g/liter or Azoxystrobin + Difenoconazole @ 1ml/liter once rainfall halts.
+                                </p>
+                            </div>
+                            <div class="text-[11px] text-slate-400 italic">
+                                Demo prediction based on computer vision feature analysis. Always verify with local Krishi Vigyan Kendra (KVK) before chemical application.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 3: FLOOD & WATERLOGGING RISK -->
+        <section id="section-flood" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-6">
+                <div class="border-b pb-3 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                            <span>🌊</span>
+                            <span>Flood & Waterlogging Risk Intelligence</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Hydrological vulnerability model integrating rainfall forecasts, river gauges, soil saturation, and crop sensitivity.
+                        </p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300 animate-pulse">
+                        HIGH RISK: 78/100
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
+                        <span class="text-slate-500 font-medium">Kosi River Gauge (Birpur/Saura):</span>
+                        <div class="text-lg font-black text-red-600">Near Warning Mark</div>
+                        <p class="text-slate-500 text-[11px]">Discharge upstream in Nepal catchment rising.</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
+                        <span class="text-slate-500 font-medium">48h Rain Forecast:</span>
+                        <div class="text-lg font-black text-red-600">88.5 mm (Heavy)</div>
+                        <p class="text-slate-500 text-[11px]">Submergence danger for low-lying fields.</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
+                        <span class="text-slate-500 font-medium">Soil Moisture Saturation:</span>
+                        <div class="text-lg font-black text-amber-600">84% (Very High)</div>
+                        <p class="text-slate-500 text-[11px]">Infiltration capacity virtually exhausted.</p>
+                    </div>
+                </div>
+
+                <!-- Actionable Directives -->
+                <div class="bg-red-50 border border-red-200 rounded-xl p-5 space-y-3">
+                    <h4 class="text-sm font-bold text-red-900 flex items-center gap-2">
+                        <span>⚠️</span>
+                        <span>Official Agronomic Flood Advisory for Purnia Farmers:</span>
+                    </h4>
+                    <ul class="text-xs text-red-950 space-y-2 list-disc list-inside">
+                        <li><strong>Avoid unnecessary irrigation:</strong> Turn off all tube-well operations immediately.</li>
+                        <li><strong>Maintain perimeter drainage:</strong> Unclog drainage channels at farm borders to allow excess surface runoff.</li>
+                        <li><strong>Maize root protection:</strong> Prevent standing water beyond 24 hours to prevent permanent root anoxia and silk rot.</li>
+                        <li><strong>Follow official flood warnings:</strong> Follow updates from Bihar Water Resources Dept (FMIS).</li>
+                    </ul>
+                </div>
+
+                <div class="text-[11px] text-slate-500 italic p-3 bg-slate-100 rounded-lg">
+                    Notice: KhetRakshak AI acts as an agronomic decision-support layer. Official Disaster Management Department (DMD) alerts take legal precedence.
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 4: DROUGHT & WATER STRESS -->
+        <section id="section-drought" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-6">
+                <div class="border-b pb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                            <span>☀️</span>
+                            <span>Drought & Water-Stress Module</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Detects moisture stress, evapotranspiration deficits, and groundwater depletion across South Bihar.
+                        </p>
+                    </div>
+                    <button onclick="window.loadScenario('gaya_drought_paddy')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-slate-900 hover:bg-amber-600">
+                        ⚡ Switch to Gaya Drought Scenario
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <span class="text-slate-500">Current District Status:</span>
+                        <div class="text-base font-bold text-slate-800 mt-1">Purnia (Zone II)</div>
+                        <div class="text-xs text-emerald-600 font-semibold mt-1">Water Stress: LOW (15/100)</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <span class="text-slate-500">South Bihar Vulnerability:</span>
+                        <div class="text-base font-bold text-amber-700 mt-1">Gaya / Nawada / Aurangabad</div>
+                        <div class="text-xs text-amber-600 font-semibold mt-1">Rain Deficit: -42%</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <span class="text-slate-500">Ahar-Pyne Water Storage:</span>
+                        <div class="text-base font-bold text-slate-800 mt-1">Traditional Irrigation</div>
+                        <div class="text-xs text-slate-500 mt-1">Community harvesting active</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <span class="text-slate-500">Moisture Conservation:</span>
+                        <div class="text-base font-bold text-slate-800 mt-1">AWD & Mulching</div>
+                        <div class="text-xs text-slate-500 mt-1">Alternate wetting and drying</div>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 space-y-2">
+                    <h4 class="text-sm font-bold text-amber-900">Drought Mitigation Directives (ICAR-RCER Guidelines):</h4>
+                    <p class="text-xs text-amber-950">
+                        In rain-deficit periods, adopt short-duration drought-tolerant varieties (e.g. Sahbhagi Dhan), apply 2% potassium chloride foliar spray, and prioritize evening micro-irrigation to reduce evaporative losses.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 5: WEATHER-TO-CROP INTELLIGENCE -->
+        <section id="section-weather" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-6">
+                <div class="border-b pb-3">
+                    <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                        <span>🌦️</span>
+                        <span>Weather-to-Crop Intelligence Engine</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Translates raw meteorological variables into crop stage-specific agronomic consequences.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="p-5 rounded-2xl bg-red-50 border border-red-200 space-y-2">
+                        <div class="text-xs font-bold uppercase tracking-wider text-red-700">Irrigation Directive:</div>
+                        <div class="text-base font-black text-red-900">⛔ HALT ALL IRRIGATION IMMEDIATELY</div>
+                        <p class="text-xs text-red-800">
+                            Soil moisture is already at 84% and an additional 88.5 mm rainfall is forecast within 48 hours. Irrigating now will flood the root zone and cause yellowing.
+                        </p>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-amber-50 border border-amber-200 space-y-2">
+                        <div class="text-xs font-bold uppercase tracking-wider text-amber-700">Foliar Spraying Directive:</div>
+                        <div class="text-base font-black text-amber-900">❌ UNFAVORABLE SPRAY WINDOW</div>
+                        <p class="text-xs text-amber-800">
+                            High wind speeds (22 km/h) and imminent precipitation will cause chemical pesticide wash-off within 24 hours. Wait for a dry clear spell.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-5 bg-white border border-slate-200 rounded-xl space-y-3">
+                    <h4 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Agronomic Consequence Breakdown:</h4>
+                    <div class="space-y-3 text-xs">
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <span class="font-bold text-slate-800">🌽 Maize Flowering Susceptibility:</span>
+                            <p class="text-slate-600 mt-0.5">
+                                Maize tassels and silks are active. Continuous heavy downpours physically dislodge pollen grains, while standing water starves root respiration, resulting in unfilled or aborted cobs.
+                            </p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <span class="font-bold text-slate-800">🦠 Foliar Blight Sporulation:</span>
+                            <p class="text-slate-600 mt-0.5">
+                                Relative humidity of 89% and temperature of 31.5°C create ideal microclimates for Maydis leaf blight spore dissemination.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 6: AI FARMER ADVISOR -->
+        <section id="section-advisor" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-5">
+                <div class="border-b pb-3">
+                    <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                        <span>🤖</span>
+                        <span>Ask KhetRakshak (RAG AI Advisor)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Contextual conversational AI grounded in verified Bihar agricultural knowledge (ICAR-RCER, BAU Sabour, KVK).
+                    </p>
+                </div>
+
+                <!-- RAG Architecture Banner -->
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
+                    <div>
+                        <span class="font-bold">Verified Sources:</span> ICAR-RCER Patna • BAU Sabour • Bihar Krishi Vibhag • FMIS Flood Advisory
+                    </div>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-200 text-emerald-950 font-bold">RAG Active</span>
+                </div>
+
+                <!-- Suggested Query Chips -->
+                <div>
+                    <span class="block text-xs font-bold text-slate-600 mb-2">⚡ Suggested Farmer Questions (Click to ask):</span>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <button class="voice-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-medium" data-query="मेरे खेत में बहुत बारिश होने वाली है, मुझे क्या करना चाहिए?" data-lang="hi">
+                            “मेरे खेत में बहुत बारिश होने वाली है, मुझे क्या करना चाहिए?”
+                        </button>
+                        <button class="voice-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-medium" data-query="My maize leaves are turning yellow with brown spots. What should I do?" data-lang="en">
+                            “My maize leaves are turning yellow. What should I do?”
+                        </button>
+                        <button class="voice-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-medium" data-query="Heavy rain is coming. Should I irrigate?" data-lang="en">
+                            “Heavy rain is coming. Should I irrigate?”
+                        </button>
+                        <button class="voice-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-medium" data-query="कमला बलान नदी का पानी बढ़ गया है, धान में क्या उपाय करें?" data-lang="hi">
+                            “कमला बलान का पानी बढ़ गया है, धान में क्या करें?”
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Display -->
+                <div id="advisor-chat-box" class="h-64 overflow-y-auto p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 text-xs">
+                    <div class="flex items-start gap-2">
+                        <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">AI</div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs max-w-lg">
+                            <p class="font-medium text-slate-800">
+                                नमस्ते किसान भाई! मैं खेतरक्षक AI हूँ। मैं आपके पूर्णिया स्थित खेत (मक्का, मंजर अवस्था) के मौसम, बाढ़ और फसल स्वास्थ्य की स्थिति से भलीभांति अवगत हूँ। आप मुझसे हिंदी या अंग्रेजी में सवाल पूछ सकते हैं।
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Box -->
+                <div class="flex items-center gap-2">
+                    <input type="text" id="advisor-query-input" placeholder="Type or click sample questions above..." class="flex-1 px-4 py-2.5 rounded-xl text-sm bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <button id="btn-advisor-send" class="btn-primary px-5 py-2.5 rounded-xl font-bold text-xs shadow-md">
+                        Send
+                    </button>
+                    <button onclick="window.switchTab('voice')" class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300">
+                        🎙️ Speak
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 7: VOICE AI -->
+        <section id="section-voice" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-6 text-center">
+                <div class="border-b pb-3">
+                    <h2 class="text-2xl font-black text-slate-900 flex items-center justify-center gap-2">
+                        <span>🎙️</span>
+                        <span>Talk to KhetRakshak (खेतरक्षक से बोलकर पूछें)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Accessible voice-first interaction designed for farmers who prefer speaking over typing. Supports Hindi and English.
+                    </p>
+                </div>
+
+                <!-- Language Selector for Voice -->
+                <div class="flex justify-center items-center gap-2 text-xs">
+                    <span class="text-slate-600 font-semibold">Speaking Language:</span>
+                    <select id="voice-lang-select" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-800">
+                        <option value="hi-IN" selected>हिन्दी (Hindi)</option>
+                        <option value="en-IN">English (India)</option>
+                    </select>
+                </div>
+
+                <!-- Microphone Button & Audio Waveforms -->
+                <div class="flex flex-col items-center justify-center space-y-4 py-4">
+                    <button id="btn-voice-mic" class="w-20 h-20 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-3xl flex items-center justify-center shadow-lg transition-transform active:scale-95">
+                        🎙️
+                    </button>
+                    
+                    <div id="voice-wave-container" class="voice-wave-container">
+                        <div class="voice-wave-bar"></div>
+                        <div class="voice-wave-bar"></div>
+                        <div class="voice-wave-bar"></div>
+                        <div class="voice-wave-bar"></div>
+                        <div class="voice-wave-bar"></div>
+                    </div>
+
+                    <div id="voice-status-text" class="text-xs text-slate-600 font-medium">
+                        Tap microphone to speak (माइक्रोफ़ोन दबाकर बोलें)
+                    </div>
+                </div>
+
+                <!-- Quick Click Voice Prompts (Crucial for judging without mic permissions) -->
+                <div class="border-t pt-4 text-left">
+                    <span class="block text-xs font-bold text-slate-600 mb-2">⚡ Or click to simulate official voice queries:</span>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <button class="voice-chip px-3 py-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-800 border border-slate-200 font-medium" data-query="मेरे खेत में बहुत बारिश होने वाली है, मुझे क्या करना चाहिए?" data-lang="hi">
+                            🗣️ “मेरे खेत में बहुत बारिश होने वाली है, मुझे क्या करना चाहिए?”
+                        </button>
+                        <button class="voice-chip px-3 py-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-800 border border-slate-200 font-medium" data-query="मेरे मक्के के पत्ते पर भूरे धब्बे हैं, क्या दवा छिड़कें?" data-lang="hi">
+                            🗣️ “मेरे मक्के के पत्ते पर भूरे धब्बे हैं, क्या दवा छिड़कें?”
+                        </button>
+                        <button class="voice-chip px-3 py-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-800 border border-slate-200 font-medium" data-query="Heavy rainfall is forecast. Should I irrigate?" data-lang="en">
+                            🗣️ “Heavy rainfall is forecast. Should I irrigate?”
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Voice Output Box -->
+                <div id="voice-answer-container" class="hidden text-left bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
+                    <div class="flex items-center justify-between border-b pb-2">
+                        <div class="text-xs font-semibold text-slate-500">
+                            Heard: <span id="voice-transcript-text" class="font-bold text-slate-800 italic">"..."</span>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            Spoken Audio Response Active
+                        </span>
+                    </div>
+
+                    <div id="voice-answer-text" class="text-sm text-slate-900 leading-relaxed font-medium">
+                        <!-- Spoken text rendered here -->
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Verified Citations:</span>
+                        <ul id="voice-sources-list" class="space-y-0.5"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 8: BIHAR AGRICULTURAL RISK MAP (GIS) -->
+        <section id="section-map" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-5">
+                <div class="border-b pb-3 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                            <span>🗺️</span>
+                            <span>Bihar Agricultural Risk Map (38 Districts GIS)</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            District-level hydrological flood vulnerability, drought stress zones, and live rainfall anomalies.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-focus-farm" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-1.5">
+                            <span>📍</span>
+                            <span>View My Farm (पूर्णिया)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Leaflet Map Container -->
+                <div id="bihar-map"></div>
+
+                <!-- Legend -->
+                <div class="flex flex-wrap items-center justify-between gap-3 text-xs p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <span class="font-bold text-slate-700">Map Legend:</span>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-red-600 inline-block"></span>
+                            <span>High Flood Risk (Kosi/Kamla/Bagmati)</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-amber-600 inline-block"></span>
+                            <span>High Drought Risk (South Bihar / Gaya)</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
+                            <span>Normal / Safe Agricultural Buffer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 9: SMART ALERTS -->
+        <section id="section-alerts" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-5">
+                <div class="border-b pb-3">
+                    <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                        <span>🚨</span>
+                        <span>Smart Early-Warning Alerts</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Prioritized agricultural and environmental alerts calibrated to your farm's exact location.
+                    </p>
+                </div>
+
+                <div id="alerts-container" class="space-y-4">
+                    <!-- Populated by app.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 10: FARM HEALTH TIMELINE -->
+        <section id="section-timeline" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-5">
+                <div class="border-b pb-3">
+                    <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                        <span>📅</span>
+                        <span>Farm Health Timeline</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Track how environmental risks and crop symptoms evolve over the agricultural season.
+                    </p>
+                </div>
+
+                <div id="timeline-container" class="space-y-2 pt-2">
+                    <!-- Populated by app.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 11: MY FARM PROFILE -->
+        <section id="section-profile" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-6">
+                <div class="border-b pb-3">
+                    <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                        <span>🧑🌾</span>
+                        <span>My Farm Profile</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Configure farm coordinates, primary crops, and local soil characteristics.
+                    </p>
+                </div>
+
+                <form id="profile-form" onsubmit="event.preventDefault(); window.saveFarmProfile();" class="space-y-4 text-xs">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Farmer Name:</label>
+                            <input type="text" id="prof-farmer-name" class="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 font-medium">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">District (Bihar):</label>
+                            <select id="prof-district" class="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 font-medium">
+                                <option value="Purnia">Purnia (पूर्णिया)</option>
+                                <option value="Katihar">Katihar (कटिहार)</option>
+                                <option value="Bhagalpur">Bhagalpur (भागलपुर)</option>
+                                <option value="Darbhanga">Darbhanga (दरभंगा)</option>
+                                <option value="Saharsa">Saharsa (सहरसा)</option>
+                                <option value="Madhepura">Madhepura (मधेपुरा)</option>
+                                <option value="Supaul">Supaul (सुपौल)</option>
+                                <option value="Gaya">Gaya (गया)</option>
+                                <option value="Patna">Patna (पटना)</option>
+                                <option value="Muzaffarpur">Muzaffarpur (मुजफ्फरपुर)</option>
+                                <option value="Samastipur">Samastipur (समस्तीपुर)</option>
+                                <option value="Rohtas">Rohtas (रोहतास)</option>
+                                <option value="Aurangabad">Aurangabad (औरंगाबाद)</option>
+                                <option value="Nawada">Nawada (नवादा)</option>
+                                <option value="Kishanganj">Kishanganj (किशनगंज)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Crop:</label>
+                            <select id="prof-crop" class="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 font-medium">
+                                <option value="Maize">Maize (मक्का)</option>
+                                <option value="Paddy">Paddy / Rice (धान)</option>
+                                <option value="Wheat">Wheat (गेहूं)</option>
+                                <option value="Potato">Potato (आलू)</option>
+                                <option value="Mustard">Mustard (सरसों)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Crop Stage:</label>
+                            <select id="prof-stage" class="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 font-medium">
+                                <option value="Flowering & Tasseling">Flowering & Tasseling</option>
+                                <option value="Vegetative">Vegetative</option>
+                                <option value="Grain Filling">Grain Filling</option>
+                                <option value="Maturity">Maturity</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Farm Size (Acres):</label>
+                            <input type="number" step="0.5" id="prof-size" class="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 font-medium">
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" class="btn-primary px-6 py-2.5 rounded-xl font-bold text-xs shadow-md">
+                            Save Farm Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- MODULE 12: ADMIN SURVEILLANCE DASHBOARD -->
+        <section id="section-admin" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 space-y-6">
+                <div class="border-b pb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                            <span>📊</span>
+                            <span>Bihar Agricultural Surveillance Dashboard</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Aggregated decision support for Department of Agriculture, KVK Network, and State Disaster Management.
+                        </p>
+                    </div>
+                    <span class="text-[11px] px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-semibold border border-blue-200">
+                        Demo / Simulated Telemetry
+                    </span>
+                </div>
+
+                <!-- High-level Metric Cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <div id="admin-monitored-farms" class="text-2xl font-black text-slate-900">14,250</div>
+                        <div class="text-xs font-semibold text-slate-500 mt-1">Total Monitored Farms</div>
+                    </div>
+                    <div class="p-4 bg-red-50 rounded-xl border border-red-200">
+                        <div id="admin-high-risk-districts" class="text-2xl font-black text-red-700">8</div>
+                        <div class="text-xs font-semibold text-red-600 mt-1">High-Risk Districts</div>
+                    </div>
+                    <div class="p-4 bg-orange-50 rounded-xl border border-orange-200">
+                        <div id="admin-flood-alerts" class="text-2xl font-black text-orange-700">1,240</div>
+                        <div class="text-xs font-semibold text-orange-600 mt-1">Flood Alert Farms</div>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                        <div id="admin-disease-alerts" class="text-2xl font-black text-amber-700">486</div>
+                        <div class="text-xs font-semibold text-amber-600 mt-1">Disease Alerts (Blight)</div>
+                    </div>
+                </div>
+
+                <!-- River Basin Telemetry Table -->
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">Key Bihar River Basins Surveillance:</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-xs font-bold text-slate-500">
+                                    <th class="py-2">River Basin & Station</th>
+                                    <th class="py-2">Water Gauge Telemetry</th>
+                                    <th class="py-2">Risk Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-rivers-tbody">
+                                <!-- Injected by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 13: ABOUT / IMPACT & IDEATEX DETAILS -->
+        <section id="section-about" class="app-section hidden space-y-6">
+            <div class="kr-card p-6 sm:p-8 space-y-6">
+                <div class="border-b pb-4">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold mb-2">
+                        <span>🏛️</span>
+                        <span>IDEATEX Bootcamp — Ideas × AI × Impact</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+                        KhetRakshak AI — Product Philosophy & Architecture
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Organized by Startup Cell × AI Club, Indian Institute of Information Technology (IIIT) Bhagalpur
+                    </p>
+                </div>
+
+                <!-- Official Section 39 Product Description -->
+                <div class="p-5 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3">
+                    <h3 class="text-sm font-bold text-emerald-950 uppercase tracking-wider">Official Product Description:</h3>
+                    <p class="text-xs sm:text-sm text-emerald-900 leading-relaxed">
+                        KhetRakshak AI is a Bihar-first agricultural risk intelligence platform that combines Computer Vision, Machine Learning, GIS, weather intelligence and Generative AI to help farmers detect crop-health problems, understand flood and drought risks, and receive personalized, actionable recommendations in an accessible, voice-friendly interface.
+                    </p>
+                    <p class="text-xs sm:text-sm text-emerald-900 leading-relaxed">
+                        Instead of treating crop disease, weather and climate risks as separate problems, KhetRakshak connects them to understand what environmental conditions mean for a farmer’s specific crop and location.
+                    </p>
+                    <p class="text-xs sm:text-sm text-emerald-950 font-bold">
+                        The goal is to move agricultural support from reactive diagnosis toward proactive risk awareness and decision support.
+                    </p>
+                </div>
+
+                <!-- AI Architecture Diagram -->
+                <div class="p-5 bg-slate-900 text-emerald-400 rounded-2xl font-mono text-xs overflow-x-auto leading-relaxed space-y-2">
+                    <div class="text-white font-bold mb-2">📐 Technical AI Architecture:</div>
+<pre>
+                    FARMER
+                       │
+           ┌───────────┴───────────┐
+           │                       │
+       📷 IMAGE                🎙 VOICE
+           │                       │
+           ▼                       ▼
+   COMPUTER VISION             SPEECH AI (Hindi / Eng)
+   (Laplacian/Color/Blight)    (Web Speech STT/TTS)
+           │                       │
+           └───────────┬───────────┘
+                       │
+                       ▼
+                 DATA PROCESSING
+                       │
+       ┌───────────────┼────────────────┐
+       │               │                │
+       ▼               ▼                ▼
+   WEATHER           GIS DATA       FARM DATA
+   (IMD/Agromet)     (38 Districts) (Stage/Soil/Acre)
+       │               │                │
+       └───────────────┼────────────────┘
+                       ▼
+                KHETRAKSHAK AI
+                  RISK ENGINE
+                       │
+        ┌──────────────┼───────────────┐
+        ▼              ▼               ▼
+    DISEASE          FLOOD           DROUGHT
+      MODEL           MODEL            MODEL
+        └──────────────┼───────────────┘
+                       ▼
+                 RISK AGGREGATOR
+                       │
+                       ▼
+                    RAG (ICAR-RCER / BAU Sabour / KVK)
+                       │
+                       ▼
+                     LLM
+                       │
+          ┌────────────┴─────────────┐
+          ▼                          ▼
+      Dashboard                  Voice AI
+</pre>
+                </div>
+
+                <!-- Key Differentiator Summary -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                        <span class="font-bold text-slate-800 text-sm">🇮🇳 Bihar-First Focus</span>
+                        <p class="text-slate-600">Tailored to Kosi-Seemanchal flood inundations and South Bihar rain deficit realities.</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                        <span class="font-bold text-slate-800 text-sm">🧠 Multimodal AI</span>
+                        <p class="text-slate-600">Integrates leaf imagery + hydrological GIS telemetry + voice interaction seamlessly.</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                        <span class="font-bold text-slate-800 text-sm">🛡️ Responsible AI</span>
+                        <p class="text-slate-600">Low-confidence uncertainty thresholding refusing to fabricate diagnoses on blurry photos.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar (Farmer Friendly) -->
+    <div class="mobile-bottom-bar lg:hidden">
+        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-bold text-emerald-800" data-tab="dashboard">
+            <span class="text-lg">📊</span>
+            <span>Dashboard</span>
+        </button>
+        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600" data-tab="scanner">
+            <span class="text-lg">📷</span>
+            <span>Scanner</span>
+        </button>
+        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600" data-tab="voice">
+            <span class="text-lg">🎙️</span>
+            <span>Voice AI</span>
+        </button>
+        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600" data-tab="map">
+            <span class="text-lg">🗺️</span>
+            <span>Bihar Map</span>
+        </button>
+        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600" data-tab="advisor">
+            <span class="text-lg">🤖</span>
+            <span>Advisor</span>
+        </button>
+    </div>
+
+    <!-- Client Application Scripts -->
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/scanner.js"></script>
+    <script src="/static/js/bihar_map.js"></script>
+    <script src="/static/js/voice.js"></script>
+
+    <script>
+        // Profile save helper
+        window.saveFarmProfile = async function() {
+            const p = window.AppState.profile || {};
+            p.farmer_name = document.getElementById('prof-farmer-name').value;
+            p.district = document.getElementById('prof-district').value;
+            p.crop = document.getElementById('prof-crop').value;
+            p.crop_stage = document.getElementById('prof-stage').value;
+            p.farm_size_acres = parseFloat(document.getElementById('prof-size').value) || 2.5;
+
+            const res = await fetch('/api/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(p)
+            });
+            window.AppState.profile = await res.json();
+            await fetchRiskEvaluation();
+            await fetchWeatherToCrop();
+            renderDashboard();
+            showToast("Farm profile updated successfully!", "success");
+            window.switchTab('dashboard');
+        };
+
+        // Chat send helper
+        const btnSend = document.getElementById('btn-advisor-send');
+        const inputQuery = document.getElementById('advisor-query-input');
+        if (btnSend && inputQuery) {
+            const sendQuery = async () => {
+                const text = inputQuery.value.trim();
+                if (!text) return;
+                
+                const chatBox = document.getElementById('advisor-chat-box');
+                chatBox.innerHTML += `
+                    <div class="flex items-start justify-end gap-2">
+                        <div class="bg-emerald-700 text-white p-3 rounded-xl shadow-xs max-w-lg">
+                            <p class="font-medium">${text}</p>
+                        </div>
+                    </div>
+                `;
+                inputQuery.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                const res = await fetch('/api/ask-advisor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: text,
+                        language: window.AppState ? window.AppState.language : 'hi'
+                    })
+                });
+                const data = await res.json();
+                const reply = window.AppState && window.AppState.language === 'hi' ? data.response_hindi : data.response_text;
+
+                chatBox.innerHTML += `
+                    <div class="flex items-start gap-2">
+                        <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">AI</div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs max-w-lg space-y-2">
+                            <p class="font-medium text-slate-800">${reply}</p>
+                            <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t">
+                                <span>🏛️ Source: ${data.verified_sources[0] || 'BAU Sabour'}</span>
+                                <button onclick="window.speakSpokenResponse('${reply.replace(/'/g, "\\'")}', '${window.AppState ? window.AppState.language : 'hi'}')" class="text-emerald-700 font-bold hover:underline">
+                                    🔊 Listen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            };
+
+            btnSend.addEventListener('click', sendQuery);
+            inputQuery.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendQuery();
+            });
+        }
+    </script>
+</body>
+</html>
