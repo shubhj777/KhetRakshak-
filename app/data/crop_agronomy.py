@@ -287,5 +287,68 @@ CROPS_AGRONOMY: Dict[str, Dict[str, Any]] = {
                 "immediate_action_hindi": "खेत में खरपतवार न होने दें और हल्की नमी रखें।"
             }
         }
+    },
+    "Litchi": {
+        "hindi_name": "शाही लीची (Shahi Litchi)",
+        "scientific_name": "Litchi chinensis",
+        "primary_season": "Spring-Summer (Muzaffarpur, Vaishali, East Champaran belt)",
+        "water_sensitivity": "Needs micro-irrigation during fruit bulking to prevent peel cracking, sensitive to fruit borer",
+        "stages": [
+            {"name": "Flowering & Panicle", "hindi_name": "मंजर व फूल अवस्था", "waterlogging_tolerance_days": 2, "drought_tolerance": "MODERATE", "water_stress_impact": "Flower drop", "flood_risk_multiplier": 1.2},
+            {"name": "Fruit Development", "hindi_name": "फल विकास अवस्था", "waterlogging_tolerance_days": 2, "drought_tolerance": "CRITICAL", "water_stress_impact": "Fruit cracking and drop", "flood_risk_multiplier": 1.4},
+            {"name": "Harvesting", "hindi_name": "तुड़ाई अवस्था", "waterlogging_tolerance_days": 3, "drought_tolerance": "HIGH", "water_stress_impact": "Post-harvest rot", "flood_risk_multiplier": 1.3}
+        ],
+        "diseases": {
+            "Fruit Borer & Anthracnose": {
+                "hindi_name": "फल बेधक एवं एन्थ्रेक्नोज़ रोग",
+                "pathogen": "Conopomorpha sinensis (Insect) & Colletotrichum (Fungus)",
+                "symptoms": ["Bore holes near fruit stalk, brown water-soaked necrotic patches on fruit skin"],
+                "symptoms_hindi": ["फल के डंठल के पास छेद, लीची के छिलके पर कत्थई-भूरे धब्बे"],
+                "favorable_weather": "Warm humid conditions (28-34°C, RH >80%) with intermittent showers",
+                "immediate_action": "Spray Chlorantraniliprole 18.5% SC @ 0.4ml/L or Neem Oil (5ml/L) + Carbendazim @ 1g/L as per NRCL Muzaffarpur guidance.",
+                "immediate_action_hindi": "क्लोरेंट्रानिलिप्रोल (0.4 मिली/लीटर) या नीम तेल (5 मिली/लीटर) का छिड़काव करें।",
+                "organic_remedy": "Bagging fruit clusters with non-woven polypropylene bags"
+            },
+            "Healthy Litchi": {
+                "hindi_name": "स्वस्थ लीची बागान",
+                "pathogen": "None",
+                "symptoms": ["Glossy healthy green foliage, clean pinkish-red developing fruit clusters"],
+                "symptoms_hindi": ["चमकदार हरी पत्तियां, बेदाग फल"],
+                "favorable_weather": "Sunny morning with mild afternoon humidity",
+                "immediate_action": "Maintain mulching around tree basin and light drip watering.",
+                "immediate_action_hindi": "पेड़ों की थालों में मल्चिंग करें और ड्रिप से हल्की नमी बनाए रखें।"
+            }
+        }
+    },
+    "Sugarcane": {
+        "hindi_name": "गन्ना (Ganna)",
+        "scientific_name": "Saccharum officinarum",
+        "primary_season": "Perennial (North-West Bihar / Champaran & Gopalganj belt)",
+        "water_sensitivity": "Needs ample water but prolonged water stagnation causes Red Rot",
+        "stages": [
+            {"name": "Formative Phase", "hindi_name": "शुरुआती बढ़वार अवस्था", "waterlogging_tolerance_days": 4, "drought_tolerance": "MODERATE", "water_stress_impact": "Slow tillering", "flood_risk_multiplier": 1.2},
+            {"name": "Grand Growth Phase", "hindi_name": "तीव्र बढ़वार अवस्था", "waterlogging_tolerance_days": 7, "drought_tolerance": "MODERATE", "water_stress_impact": "Short internodes", "flood_risk_multiplier": 1.1},
+            {"name": "Ripening & Maturity", "hindi_name": "पकने की अवस्था", "waterlogging_tolerance_days": 5, "drought_tolerance": "HIGH", "water_stress_impact": "Inversion of sucrose if waterlogged", "flood_risk_multiplier": 1.3}
+        ],
+        "diseases": {
+            "Red Rot": {
+                "hindi_name": "लाल सड़न रोग (रेड रॉट)",
+                "pathogen": "Colletotrichum falcatum (Fungus)",
+                "symptoms": ["Third and fourth leaves wither from tip, cane splits reveal red internal pith with white cross bands"],
+                "symptoms_hindi": ["ऊपरी पत्तियां सूखना, गन्ने को चीरने पर भीतर लाल गूदा और सफेद आड़े धब्बे"],
+                "favorable_weather": "Continuous water stagnation in poorly drained soil",
+                "immediate_action": "Drain water immediately. Uproot and burn infected stools. Disinfect soil with Carbendazim.",
+                "immediate_action_hindi": "जलभराव तुरंत निकालें। संक्रमित पौधे उखाड़कर नष्ट करें।"
+            },
+            "Healthy Sugarcane": {
+                "hindi_name": "स्वस्थ गन्ना फसल",
+                "pathogen": "None",
+                "symptoms": ["Thick erect stalks, dark green lanceolate leaves, clean nodes"],
+                "symptoms_hindi": ["मजबूत गन्ने के तने, गहरी हरी पत्तियां"],
+                "favorable_weather": "Warm tropical sunshine with well-drained fertile loam",
+                "immediate_action": "Earth up cane rows and maintain field irrigation drains.",
+                "immediate_action_hindi": "गन्ने की पंक्तियों पर मिट्टी चढ़ाएं।"
+            }
+        }
     }
 }

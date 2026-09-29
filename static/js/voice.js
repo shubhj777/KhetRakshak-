@@ -1,5 +1,5 @@
 /**
- * KhetRakshak AI - Voice AI Assistant Module
+ * KhetRakshak - Voice AI Assistant Module
  * Provides Speech-to-Text, Voice Intent Processing, and Text-to-Speech (TTS)
  * with dedicated support for Hindi (hi-IN) and English (en-IN).
  */
@@ -123,7 +123,7 @@ async function handleVoiceQuery(queryText, lang = 'hi') {
     if (transcriptEl) transcriptEl.textContent = `"${queryText}"`;
 
     if (answerTextEl) {
-        answerTextEl.innerHTML = `<span class="animate-pulse">Thinking... (खेतरक्षक AI विचार कर रहा है...)</span>`;
+        answerTextEl.innerHTML = `<span class="animate-pulse">Thinking... (खेतरक्षक विचार कर रहा है...)</span>`;
     }
     if (answerContainer) answerContainer.classList.remove('hidden');
 

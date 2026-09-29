@@ -233,6 +233,202 @@ h1, h2, h3, h4, .font-heading {
     font-weight: 600;
 }
 
+/* Dark Mode Tokens & Overrides */
+html.dark {
+    --primary-950: #021a0d;
+    --primary-900: #064e2b;
+    --primary-800: #0a693c;
+    --primary-700: #10b981;
+    --primary-600: #34d399;
+    --primary-500: #4ade80;
+    --primary-100: #064e3b;
+    --primary-50: #032b1d;
+
+    --surface-bg: #090e17;
+    --surface-card: #111a28;
+    --surface-border: #1e2c42;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 12px 28px -4px rgba(0, 0, 0, 0.6);
+}
+
+html.dark body {
+    background-color: var(--surface-bg);
+    color: var(--text-primary);
+}
+
+html.dark .glass-nav {
+    background: rgba(17, 26, 40, 0.92);
+    border-bottom-color: rgba(30, 44, 66, 0.8);
+}
+
+html.dark .hero-gradient {
+    background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at bottom left, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
+                linear-gradient(180deg, #111a28 0%, #0d1522 100%);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+html.dark .kr-card {
+    background: var(--surface-card);
+    border-color: var(--surface-border);
+}
+
+html.dark input, 
+html.dark select, 
+html.dark textarea {
+    background-color: #162235 !important;
+    border-color: #243550 !important;
+    color: #f8fafc !important;
+}
+
+html.dark .bg-white {
+    background-color: #111a28 !important;
+    color: #f8fafc;
+}
+
+html.dark .bg-slate-50 {
+    background-color: #0d1522 !important;
+}
+
+html.dark .bg-slate-100 {
+    background-color: #162235 !important;
+}
+
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-300 {
+    border-color: #1e2c42 !important;
+}
+
+html.dark .text-slate-900 {
+    color: #f8fafc !important;
+}
+
+html.dark .text-slate-800 {
+    color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-700 {
+    color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-600 {
+    color: #94a3b8 !important;
+}
+
+html.dark .text-emerald-950 {
+    color: #34d399 !important;
+}
+
+/* Modals */
+.kr-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.kr-modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.kr-modal-dialog {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 580px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    transform: scale(0.95);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kr-modal-backdrop.active .kr-modal-dialog {
+    transform: scale(1);
+}
+
+/* Dropdown Menu Items */
+.more-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: left;
+    transition: background 0.15s ease;
+}
+
+.more-menu-item:hover {
+    background-color: var(--primary-50);
+    color: var(--primary-700);
+}
+
+html.dark .more-menu-item:hover {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+}
+
+.more-menu-action {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-align: left;
+    transition: background 0.15s ease;
+}
+
+.more-menu-action:hover {
+    background-color: var(--primary-50);
+}
+
+html.dark .more-menu-action:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Toast Notifications */
+.kr-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 300;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes toastSlideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
 /* Mobile Bottom Navigation Bar */
 @media (max-width: 768px) {
     .mobile-bottom-bar {
@@ -242,6 +438,7 @@ h1, h2, h3, h4, .font-heading {
         right: 0;
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border-top: 1px solid var(--surface-border);
         display: flex;
         justify-content: space-around;
@@ -249,7 +446,12 @@ h1, h2, h3, h4, .font-heading {
         z-index: 90;
         box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
     }
+    html.dark .mobile-bottom-bar {
+        background: rgba(17, 26, 40, 0.95);
+        border-top-color: var(--surface-border);
+    }
     .pb-mobile-nav {
         padding-bottom: 74px;
     }
 }
+

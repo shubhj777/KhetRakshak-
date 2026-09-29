@@ -1,20 +1,65 @@
-"""Data models and schemas for KhetRakshak AI.
-Bihar's AI-Powered Crop Risk Intelligence Platform.
+"""Data models and schemas for KhetRakshak.
+Bihar's Crop Risk Intelligence & Early-Warning Platform.
 """
 
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 from datetime import datetime
 
+class UserLoginRequest(BaseModel):
+    mobile_number: str = Field(..., description="10-digit mobile number")
+    password: str = Field(..., description="Farmer account password")
+
+class UserRegisterRequest(BaseModel):
+    farmer_name: str = Field(..., description="Farmer full name")
+    mobile_number: str = Field(..., description="10-digit mobile number")
+    password: str = Field(..., description="Password")
+    district: str = Field(default="Purnia", description="District in Bihar")
+    block: str = Field(default="Kasba", description="Block / Tehsil")
+    village: str = Field(default="", description="Village name")
+    primary_crop: str = Field(default="Maize", description="Primary Crop")
+    other_crops: Optional[str] = Field(default="Paddy, Mustard", description="Other crops grown")
+    land_area: float = Field(default=3.0, description="Land area")
+    land_area_unit: str = Field(default="Acres", description="Acres, Bigha, or Kattha")
+    crop_stage: str = Field(default="Flowering & Tasseling", description="Current crop stage")
+    irrigation_type: str = Field(default="Borewell / Tube-well", description="Irrigation source")
+    soil_type: str = Field(default="Alluvial Loam", description="Soil type")
+    preferred_language: str = Field(default="hi", description="'hi' or 'en'")
+
+class UserResponse(BaseModel):
+    id: int
+    farmer_name: str
+    mobile_number: str
+    district: str
+    block: str
+    village: str
+    primary_crop: str
+    other_crops: Optional[str] = ""
+    land_area: float
+    land_area_unit: str
+    crop_stage: str
+    irrigation_type: str
+    soil_type: str
+    preferred_language: str = "hi"
+    is_demo: bool = False
+
 class FarmProfile(BaseModel):
-    farmer_name: str = Field(default="Demo Farmer", description="Farmer Name")
+    farmer_name: str = Field(default="Ramesh Kumar Yadav", description="Farmer Name")
+    mobile_number: Optional[str] = Field(default="9876543210", description="Mobile number")
     district: str = Field(default="Purnia", description="District in Bihar")
     village_block: Optional[str] = Field(default="Kasba Block", description="Block or Village")
+    block: Optional[str] = Field(default="Kasba", description="Block")
+    village: Optional[str] = Field(default="Madhavpur", description="Village")
     crop: str = Field(default="Maize", description="Primary Crop (Maize, Paddy, Wheat, Mustard, etc.)")
-    crop_stage: str = Field(default="Flowering", description="Current crop stage (Germination, Vegetative, Flowering, Grain Filling, Maturity)")
-    farm_size_acres: float = Field(default=2.5, description="Farm size in acres")
+    primary_crop: Optional[str] = Field(default="Maize", description="Alias for crop")
+    other_crops: Optional[str] = Field(default="Paddy, Mustard", description="Other crops")
+    crop_stage: str = Field(default="Flowering & Tasseling", description="Current crop stage")
+    farm_size_acres: float = Field(default=3.0, description="Farm size in acres")
+    land_area: Optional[float] = Field(default=3.0, description="Land area")
+    land_area_unit: Optional[str] = Field(default="Acres", description="Unit")
     irrigation_type: str = Field(default="Borewell / Tube-well", description="Irrigation source")
     soil_type: str = Field(default="Alluvial Loam (Khadar)", description="Soil type")
+    preferred_language: Optional[str] = Field(default="hi", description="Preferred Language")
     latitude: Optional[float] = Field(default=25.7771, description="Farm latitude")
     longitude: Optional[float] = Field(default=87.4753, description="Farm longitude")
 
@@ -49,7 +94,7 @@ class DiseaseDetectionResult(BaseModel):
     immediate_action: str
     immediate_action_hindi: str
     expert_verification_needed: bool
-    disclaimer: str = "Demo prediction based on computer vision feature analysis. Always verify with local Krishi Vigyan Kendra (KVK) before chemical application."
+    disclaimer: str = "Prototype prediction based on computer vision feature analysis. Always verify with local Krishi Vigyan Kendra (KVK) before chemical application."
 
 class EnvironmentalFactors(BaseModel):
     district: str

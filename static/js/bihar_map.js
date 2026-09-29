@@ -1,5 +1,5 @@
 /**
- * KhetRakshak AI - Bihar Agricultural Risk GIS Map
+ * KhetRakshak - Bihar Agricultural Risk GIS Map
  * Interactive Leaflet Map with District-level multi-risk visualization,
  * river basin overlays, and farm locator.
  */

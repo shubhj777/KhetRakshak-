@@ -257,20 +257,44 @@ function renderScanResults(quality, diagnosis) {
     if (!diseaseContainer) return;
 
     if (!quality.is_valid) {
-        diseaseContainer.innerHTML = `
-            <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-sm">
-                <div class="font-bold flex items-center gap-2">
-                    <span>🛑</span>
-                    <span>${lang === 'hi' ? 'गुणवत्ता जांच असफल - निदान स्थगित' : 'Quality Check Failed - Diagnosis Withheld'}</span>
+        if (quality.status_code === 'NOT_CROP') {
+            diseaseContainer.innerHTML = `
+                <div class="p-4 bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-300 dark:border-rose-800 rounded-xl text-rose-900 dark:text-rose-200 text-sm">
+                    <div class="font-bold flex items-center gap-2 text-base text-rose-800 dark:text-rose-300">
+                        <span>🚫</span>
+                        <span>${lang === 'hi' ? 'गैर-कृषि वस्तु अस्वीकृत (Non-Agricultural Image Rejected)' : 'Non-Agricultural Object Rejected'}</span>
+                    </div>
+                    <p class="mt-2 font-medium leading-relaxed">
+                        ${lang === 'hi' 
+                            ? 'कृपया फसल की पत्ती या पौधे की स्पष्ट तस्वीर अपलोड करें। वाहन, चेहरे, दस्तावेज या गैर-कृषि तस्वीरों का निदान नहीं किया जा सकता।' 
+                            : 'Please upload a clear photograph of a crop leaf or plant. Images of animals, vehicles, humans, documents, or indoor scenes cannot be diagnosed.'}
+                    </p>
+                    <div class="mt-3 p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-rose-200 dark:border-rose-800 text-xs text-slate-600 dark:text-slate-400">
+                        <strong>🛡️ ${lang === 'hi' ? 'जिम्मेदार एआई नियम:' : 'Responsible AI Guardrail:'}</strong> ${lang === 'hi' ? 'खेतरक्षक किसी भी गैर-कृषि फोटो पर मनगढ़ंत रोग या कीटनाशक का सुझाव नहीं देता।' : 'KhetRakshak strictly refuses to hallucinate crop diseases or pesticides on unrelated photographs.'}
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <button onclick="document.getElementById('scanner-file-input').click()" class="px-3.5 py-1.5 bg-rose-700 hover:bg-rose-800 text-white rounded-lg text-xs font-semibold">
+                            ${lang === 'hi' ? 'फसल की फोटो अपलोड करें' : 'Upload Crop Leaf Photo'}
+                        </button>
+                    </div>
                 </div>
-                <p class="mt-1">${lang === 'hi' ? 'सिस्टम अस्पष्ट या धुंधली तस्वीर पर गलत कीटनाशक की सिफारिश नहीं करता।' : 'Responsible AI Safeguard: The system refuses to produce a diagnosis on low-quality images to prevent harmful pesticide recommendations.'}</p>
-                <div class="mt-3 flex gap-2">
-                    <button onclick="document.getElementById('scanner-file-input').click()" class="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-semibold">
-                        ${lang === 'hi' ? 'साफ फोटो दोबारा लें' : 'Take Another Photo'}
-                    </button>
+            `;
+        } else {
+            diseaseContainer.innerHTML = `
+                <div class="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-900 dark:text-amber-200 text-sm">
+                    <div class="font-bold flex items-center gap-2">
+                        <span>🛑</span>
+                        <span>${lang === 'hi' ? 'गुणवत्ता जांच असफल - निदान स्थगित' : 'Quality Check Failed - Diagnosis Withheld'}</span>
+                    </div>
+                    <p class="mt-1">${lang === 'hi' ? quality.message_hindi : quality.message}</p>
+                    <div class="mt-3 flex gap-2">
+                        <button onclick="document.getElementById('scanner-file-input').click()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold">
+                            ${lang === 'hi' ? 'साफ फोटो दोबारा लें' : 'Take Another Photo'}
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
         return;
     }
 

@@ -109,10 +109,32 @@ def generate_dark_image():
     arr = np.clip(arr, 0, 255).astype(np.uint8)
     Image.fromarray(arr).save(os.path.join(OUTPUT_DIR, "dark_leaf_sample.jpg"), quality=85)
 
+def generate_non_crop_sample():
+    # An image of a smartphone / metallic desk object (0% crop foliage, high contrast geometry)
+    img = Image.new("RGB", (600, 600), (220, 225, 230))
+    draw = ImageDraw.Draw(img)
+    # Desk wood grain
+    for y in range(600):
+        draw.line([(0, y), (600, y)], fill=(180 + int(10*math.sin(y/15)), 140, 100))
+    # Smartphone bezel
+    draw.rounded_rectangle([180, 80, 420, 520], radius=32, fill=(20, 24, 30), outline=(80, 90, 100), width=4)
+    # Screen displaying glowing tech UI
+    draw.rounded_rectangle([200, 120, 400, 480], radius=12, fill=(15, 23, 42))
+    # Screen lines and buttons
+    draw.rectangle([220, 160, 380, 220], fill=(30, 41, 59))
+    draw.rectangle([220, 240, 380, 260], fill=(59, 130, 246))
+    draw.rectangle([220, 280, 340, 300], fill=(71, 85, 105))
+    draw.rectangle([220, 320, 300, 340], fill=(71, 85, 105))
+    # Camera lens at top
+    draw.ellipse([290, 95, 310, 105], fill=(5, 5, 10))
+    img.save(os.path.join(OUTPUT_DIR, "non_crop_sample.jpg"), quality=90)
+
 if __name__ == "__main__":
     generate_healthy_maize()
     generate_maize_maydis_blight()
     generate_paddy_bacterial_blight()
     generate_blurry_image()
     generate_dark_image()
-    print("Sample images generated successfully.")
+    generate_non_crop_sample()
+    print("Sample images including non-crop sample generated successfully.")
+

@@ -1,5 +1,5 @@
-"""SQLite Persistence & In-Memory Store for KhetRakshak AI.
-Tracks farm profile, scan timeline, alerts, and aggregate surveillance analytics.
+"""SQLite Persistence & In-Memory Store for KhetRakshak.
+Tracks farmer accounts, farm profiles, scan timeline, alerts, and surveillance analytics.
 """
 
 import sqlite3
@@ -15,7 +15,30 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # 1. Profile table
+    # 1. Farmers / Users Authentication table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS farmers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            farmer_name TEXT NOT NULL,
+            mobile_number TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            district TEXT NOT NULL,
+            block TEXT,
+            village TEXT,
+            primary_crop TEXT NOT NULL,
+            other_crops TEXT,
+            land_area REAL,
+            land_area_unit TEXT DEFAULT 'Acres',
+            crop_stage TEXT,
+            irrigation_type TEXT,
+            soil_type TEXT,
+            preferred_language TEXT DEFAULT 'hi',
+            is_demo INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # 2. Profile table (active farm snapshot)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS farm_profile (
             id INTEGER PRIMARY KEY,
@@ -33,7 +56,7 @@ def init_db():
         )
     """)
 
-    # 2. Scan timeline table
+    # 3. Scan timeline table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS scan_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,7 +73,7 @@ def init_db():
         )
     """)
 
-    # 3. Smart alerts table
+    # 4. Smart alerts table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS smart_alerts (
             id TEXT PRIMARY KEY,
@@ -70,6 +93,43 @@ def init_db():
     """)
 
     conn.commit()
+
+    # Pre-seed 5 realistic Bihar Demo Farmers
+    cursor.execute("SELECT COUNT(*) FROM farmers")
+    if cursor.fetchone()[0] == 0:
+        demo_accounts = [
+            (
+                "Ramesh Kumar Yadav", "9800011111", "demo", "Purnia", "Kasba", "Madhavpur",
+                "Maize", "Paddy, Mustard", 3.0, "Acres", "Flowering & Tasseling",
+                "Borewell / Tube-well", "Sandy Loam Alluvium", "hi", 1
+            ),
+            (
+                "Suresh Manjhi", "9800022222", "demo", "Gaya", "Bodh Gaya", "Bakror",
+                "Wheat", "Gram, Mustard", 2.5, "Acres", "Vegetative (Jointing)",
+                "Check Dam / Tube-well", "Old Alluvium / Red Sandy Silt", "hi", 1
+            ),
+            (
+                "Arun Kumar Singh", "9800033333", "demo", "Bhagalpur", "Sabour", "Khanjarpur",
+                "Paddy", "Maize, Jardalu Mango", 4.0, "Acres", "Tillering",
+                "Canal / River Lift", "Fine Alluvial Silt Loam", "hi", 1
+            ),
+            (
+                "Mukesh Chandra", "9800044444", "demo", "Muzaffarpur", "Mushahari", "Patahi",
+                "Litchi", "Vegetables, Paddy", 5.0, "Acres", "Fruit Development",
+                "Drip Irrigation", "Calcareous Alluvium (Lime-rich)", "hi", 1
+            ),
+            (
+                "Dharmendra Rai", "9800055555", "demo", "Rohtas", "Nokha", "Baraon",
+                "Paddy", "Wheat, Lentil", 6.0, "Acres", "Tillering & Growth",
+                "Sone Canal Network", "Rich Sone Alluvium", "hi", 1
+            )
+        ]
+        cursor.executemany("""
+            INSERT INTO farmers
+            (farmer_name, mobile_number, password, district, block, village, primary_crop, other_crops, land_area, land_area_unit, crop_stage, irrigation_type, soil_type, preferred_language, is_demo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, demo_accounts)
+        conn.commit()
 
     # Populate default demo profile if empty
     cursor.execute("SELECT COUNT(*) FROM farm_profile")
@@ -147,8 +207,8 @@ def init_db():
                 "DISEASE",
                 "WARNING",
                 "🦠",
-                "Maydis leaf blight symptoms detected in latest AI scan.",
-                "नवीनतम एआई स्कैन में पर्ण अंगमारी के लक्षण पाए गए।",
+                "Maydis leaf blight symptoms detected in latest scan.",
+                "नवीनतम स्कैन में पर्ण अंगमारी के लक्षण पाए गए।",
                 "Inspect lower leaves. Prepare Mancozeb 75% WP spray once rainfall stops.",
                 "निचली पत्तियों की जांच करें। बारिश रुकते ही मैंकोजेब का छिड़काव करें।",
                 "Purnia",
@@ -174,6 +234,186 @@ def init_db():
         conn.commit()
 
     conn.close()
+
+# ----------------- Farmer Authentication & Profile Functions -----------------
+
+def register_farmer(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Registers a new farmer in SQLite database."""
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    mobile = str(data.get("mobile_number", "")).strip()
+    cursor.execute("SELECT id FROM farmers WHERE mobile_number = ?", (mobile,))
+    existing = cursor.fetchone()
+    if existing:
+        conn.close()
+        raise ValueError("Mobile number is already registered. Please login.")
+
+    cursor.execute("""
+        INSERT INTO farmers
+        (farmer_name, mobile_number, password, district, block, village, primary_crop, other_crops, land_area, land_area_unit, crop_stage, irrigation_type, soil_type, preferred_language, is_demo)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        data.get("farmer_name", "Farmer"),
+        mobile,
+        data.get("password", "123456"),
+        data.get("district", "Purnia"),
+        data.get("block", ""),
+        data.get("village", ""),
+        data.get("primary_crop", "Maize"),
+        data.get("other_crops", ""),
+        float(data.get("land_area", 2.5)),
+        data.get("land_area_unit", "Acres"),
+        data.get("crop_stage", "Flowering"),
+        data.get("irrigation_type", "Borewell / Tube-well"),
+        data.get("soil_type", "Alluvial Loam"),
+        data.get("preferred_language", "hi"),
+        0
+    ))
+    new_id = cursor.lastrowid
+    conn.commit()
+
+    # Also sync into current active farm_profile
+    cursor.execute("""
+        UPDATE farm_profile SET
+            farmer_name=?, district=?, village_block=?, crop=?, crop_stage=?,
+            farm_size_acres=?, irrigation_type=?, soil_type=?
+        WHERE id=1
+    """, (
+        data.get("farmer_name"), data.get("district"),
+        f"{data.get('block', '')} Block", data.get("primary_crop"),
+        data.get("crop_stage"), float(data.get("land_area", 2.5)),
+        data.get("irrigation_type"), data.get("soil_type")
+    ))
+    conn.commit()
+    conn.close()
+
+    return get_farmer_by_id(new_id)
+
+def authenticate_farmer(mobile: str, password: str) -> Optional[Dict[str, Any]]:
+    """Validates mobile and password against farmers table."""
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, farmer_name, mobile_number, password, district, block, village, primary_crop,
+               other_crops, land_area, land_area_unit, crop_stage, irrigation_type,
+               soil_type, preferred_language, is_demo
+        FROM farmers
+        WHERE mobile_number = ?
+    """, (mobile.strip(),))
+    row = cursor.fetchone()
+    conn.close()
+    
+    if not row:
+        return None
+
+    stored_pwd = row[3] or ""
+    is_demo = bool(row[15])
+    input_pwd = password.strip()
+
+    # Password validation: exact match, or standard demo passwords for demo accounts
+    if stored_pwd != input_pwd:
+        if not (is_demo and input_pwd in ["demo", "123456", "demo_password", "password123"]):
+            return None
+
+    farmer_dict = {
+        "id": row[0],
+        "farmer_name": row[1],
+        "mobile_number": row[2],
+        "district": row[4],
+        "block": row[5],
+        "village": row[6],
+        "primary_crop": row[7],
+        "other_crops": row[8],
+        "land_area": row[9],
+        "land_area_unit": row[10],
+        "crop_stage": row[11],
+        "irrigation_type": row[12],
+        "soil_type": row[13],
+        "preferred_language": row[14],
+        "is_demo": bool(row[15])
+    }
+
+    # Sync into farm_profile
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE farm_profile SET
+            farmer_name=?, district=?, village_block=?, crop=?, crop_stage=?,
+            farm_size_acres=?, irrigation_type=?, soil_type=?
+        WHERE id=1
+    """, (
+        farmer_dict["farmer_name"], farmer_dict["district"],
+        f"{farmer_dict['block']} Block", farmer_dict["primary_crop"],
+        farmer_dict["crop_stage"], farmer_dict["land_area"],
+        farmer_dict["irrigation_type"], farmer_dict["soil_type"]
+    ))
+    conn.commit()
+    conn.close()
+
+    return farmer_dict
+
+def get_farmer_by_id(farmer_id: int) -> Optional[Dict[str, Any]]:
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, farmer_name, mobile_number, district, block, village, primary_crop,
+               other_crops, land_area, land_area_unit, crop_stage, irrigation_type,
+               soil_type, preferred_language, is_demo
+        FROM farmers WHERE id = ?
+    """, (farmer_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "id": row[0],
+        "farmer_name": row[1],
+        "mobile_number": row[2],
+        "district": row[3],
+        "block": row[4],
+        "village": row[5],
+        "primary_crop": row[6],
+        "other_crops": row[7],
+        "land_area": row[8],
+        "land_area_unit": row[9],
+        "crop_stage": row[10],
+        "irrigation_type": row[11],
+        "soil_type": row[12],
+        "preferred_language": row[13],
+        "is_demo": bool(row[14])
+    }
+
+def get_demo_farmers() -> List[Dict[str, Any]]:
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, farmer_name, mobile_number, district, block, village, primary_crop,
+               land_area, crop_stage
+        FROM farmers WHERE is_demo = 1 ORDER BY id ASC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return [
+        {
+            "id": r[0],
+            "farmer_name": r[1],
+            "mobile_number": r[2],
+            "district": r[3],
+            "block": r[4],
+            "village": r[5],
+            "primary_crop": r[6],
+            "land_area": r[7],
+            "crop_stage": r[8]
+        }
+        for r in rows
+    ]
+
+# ----------------- Active Profile Functions -----------------
 
 def get_profile() -> FarmProfile:
     init_db()
@@ -309,5 +549,5 @@ def get_admin_metrics() -> Dict[str, Any]:
             {"crop": "Makhana", "acreage_at_risk_ha": 6800, "dominant_threat": "Pond water exchange & pest surveillance in Mithilanchal"},
             {"crop": "Sugarcane", "acreage_at_risk_ha": 18200, "dominant_threat": "Water stagnation root rot in West Champaran"}
         ],
-        "disclaimer": "Simulated surveillance telemetry aggregated from participating KVK centers and farmer uploads for IDEATEX demonstration."
+        "disclaimer": "Prototype telemetry aggregated from participating KVK centers and farmer uploads for demonstration."
     }

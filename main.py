@@ -1,7 +1,5 @@
-"""KhetRakshak AI (खेतरक्षक AI)
-Bihar's AI-Powered Crop Risk Intelligence & Early-Warning Platform.
-Developed for IDEATEX Bootcamp — Ideas x AI x Impact
-Startup Cell x AI Club, IIIT Bhagalpur
+"""KhetRakshak
+Bihar's Crop Risk Intelligence & Early-Warning Platform.
 """
 
 import os
@@ -19,7 +17,10 @@ from app.models import (
     AdvisorQueryRequest,
     AdvisorQueryResponse,
     DiseaseDetectionResult,
-    RiskEngineResult
+    RiskEngineResult,
+    UserLoginRequest,
+    UserRegisterRequest,
+    UserResponse
 )
 from app.data.bihar_districts import BIHAR_DISTRICTS
 from app.data.crop_agronomy import CROPS_AGRONOMY
@@ -35,12 +36,16 @@ from app.storage import (
     get_scan_timeline,
     add_scan_history,
     get_alerts,
-    get_admin_metrics
+    get_admin_metrics,
+    register_farmer,
+    authenticate_farmer,
+    get_farmer_by_id,
+    get_demo_farmers
 )
 
 app = FastAPI(
-    title="KhetRakshak AI",
-    description="Bihar's AI-Powered Crop Risk Intelligence & Early-Warning Platform",
+    title="KhetRakshak",
+    description="Bihar's Crop Risk Intelligence & Early-Warning Platform",
     version="1.0.0"
 )
 
@@ -91,7 +96,84 @@ async def serve_index():
     if os.path.exists(index_path):
         with open(index_path, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    return HTMLResponse("<h1>KhetRakshak AI Starting...</h1>")
+    return HTMLResponse("<h1>KhetRakshak Starting...</h1>")
+
+# ----------------- Farmer Authentication Endpoints -----------------
+
+@app.post("/api/auth/register")
+async def register_farmer_endpoint(req: UserRegisterRequest):
+    try:
+        user = register_farmer(req.dict())
+        # Update active environmental factors to the registered district
+        d_data = BIHAR_DISTRICTS.get(user["district"], BIHAR_DISTRICTS["Purnia"])
+        active_environmental.district = user["district"]
+        active_environmental.historical_flood_vulnerability = "High" if d_data["historical_flood_risk"] > 60 else "Low"
+        active_environmental.historical_drought_vulnerability = "High" if d_data["historical_drought_risk"] > 60 else "Low"
+        active_environmental.current_rainfall_mm = d_data["current_rainfall_24h_mm"]
+        active_environmental.river_name = d_data["river_basin"]
+        return {
+            "status": "success",
+            "user": user,
+            "profile": get_profile()
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Registration error. Please check your details and try again.")
+
+@app.post("/api/auth/login")
+async def login_farmer_endpoint(req: UserLoginRequest):
+    user = authenticate_farmer(req.mobile_number, req.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Mobile number or password is incorrect.")
+    d_data = BIHAR_DISTRICTS.get(user["district"], BIHAR_DISTRICTS["Purnia"])
+    active_environmental.district = user["district"]
+    active_environmental.historical_flood_vulnerability = "High" if d_data["historical_flood_risk"] > 60 else "Low"
+    active_environmental.historical_drought_vulnerability = "High" if d_data["historical_drought_risk"] > 60 else "Low"
+    active_environmental.current_rainfall_mm = d_data["current_rainfall_24h_mm"]
+    active_environmental.river_name = d_data["river_basin"]
+    return {
+        "status": "success",
+        "user": user,
+        "profile": get_profile()
+    }
+
+@app.get("/api/auth/demo-accounts")
+async def get_demo_accounts_endpoint():
+    return get_demo_farmers()
+
+@app.post("/api/auth/demo-login/{demo_id}")
+async def demo_login_endpoint(demo_id: str):
+    # Map demo_id (e.g. '1', '2', or 'demo_purnia_maize') to preset scenario
+    scenario_map = {
+        "1": "demo_purnia_maize",
+        "2": "demo_gaya_wheat",
+        "3": "demo_bhagalpur_paddy",
+        "4": "demo_muzaffarpur_litchi",
+        "5": "demo_rohtas_rice",
+        "demo_purnia_maize": "demo_purnia_maize",
+        "demo_gaya_wheat": "demo_gaya_wheat",
+        "demo_bhagalpur_paddy": "demo_bhagalpur_paddy",
+        "demo_muzaffarpur_litchi": "demo_muzaffarpur_litchi",
+        "demo_rohtas_rice": "demo_rohtas_rice",
+        "demo_rohtas_paddy": "demo_rohtas_rice",
+        "ideatex_purnia_maize": "demo_purnia_maize",
+        "gaya_drought_paddy": "demo_gaya_wheat",
+        "darbhanga_kamla_flood": "demo_bhagalpur_paddy"
+    }
+    target_id = scenario_map.get(demo_id, "demo_purnia_maize")
+    res = await load_preset_scenario(target_id)
+    user = {
+        "id": int(demo_id) if demo_id.isdigit() else 1,
+        "farmer_name": res["profile"].farmer_name,
+        "mobile_number": res["profile"].mobile_number or "9800011111",
+        "district": res["profile"].district,
+        "block": res["profile"].block,
+        "village": res["profile"].village,
+        "primary_crop": res["profile"].primary_crop
+    }
+    res["user"] = user
+    return res
 
 @app.get("/api/profile", response_model=FarmProfile)
 async def read_profile():
@@ -116,6 +198,7 @@ async def list_scenarios():
         {
             "id": s["id"],
             "title": s["title"],
+            "title_hindi": s.get("title_hindi", s["title"]),
             "description": s["description"],
             "district": s["district"],
             "crop": s["crop"],
@@ -127,22 +210,40 @@ async def list_scenarios():
 @app.post("/api/load-scenario/{scenario_id}")
 async def load_preset_scenario(scenario_id: str):
     global active_environmental, latest_scan_result
-    scenario = PRESET_SCENARIOS.get(scenario_id)
+    # Legacy scenario alias map
+    alias_map = {
+        "ideatex_purnia_maize": "demo_purnia_maize",
+        "gaya_drought_paddy": "demo_gaya_wheat",
+        "darbhanga_kamla_flood": "demo_bhagalpur_paddy"
+    }
+    resolved_id = alias_map.get(scenario_id, scenario_id)
+    scenario = PRESET_SCENARIOS.get(resolved_id)
     if not scenario:
-        raise HTTPException(status_code=404, detail="Scenario not found")
+        # Fallback to first scenario
+        scenario = list(PRESET_SCENARIOS.values())[0]
 
     # Update profile
     prof = FarmProfile(
         farmer_name=scenario["farmer_name"],
         district=scenario["district"],
-        village_block=scenario["village_block"],
+        village_block=scenario.get("village_block", f"{scenario.get('block', '')} Block"),
+        block=scenario.get("block", ""),
+        village=scenario.get("village", ""),
         crop=scenario["crop"],
+        primary_crop=scenario["primary_crop"],
+        other_crops=scenario.get("other_crops", ""),
         crop_stage=scenario["crop_stage"],
-        farm_size_acres=scenario["farm_size_acres"],
+        farm_size_acres=scenario.get("farm_size_acres", 3.0),
+        land_area=scenario.get("land_area", 3.0),
+        land_area_unit=scenario.get("land_area_unit", "Acres"),
         irrigation_type=scenario["irrigation_type"],
-        soil_type=scenario["soil_type"]
+        soil_type=scenario["soil_type"],
+        latitude=scenario.get("latitude", 25.7771),
+        longitude=scenario.get("longitude", 87.4753),
+        preferred_language=scenario.get("preferred_language", "hi")
     )
     update_profile(prof)
+
 
     # Update environmental parameters
     env_data = scenario["environmental"]
@@ -183,7 +284,7 @@ async def load_preset_scenario(scenario_id: str):
         immediate_action=disease_entry.get("immediate_action", "Drain standing water immediately."),
         immediate_action_hindi=disease_entry.get("immediate_action_hindi", "खेत से तुरंत अतिरिक्त पानी निकालें।"),
         expert_verification_needed=True,
-        disclaimer="Demo scenario preset for IDEATEX demonstration."
+        disclaimer="Demo scenario preset for KhetRakshak demonstration."
     )
 
     # Compute risk
@@ -344,7 +445,7 @@ async def ask_advisor(request: AdvisorQueryRequest):
 
 @app.post("/api/voice-query")
 async def process_voice_query(data: Dict[str, Any]):
-    transcript = data.get("transcript", "").strip()
+    transcript = (data.get("transcript") or data.get("query_text") or data.get("query") or "").strip()
     language = data.get("language", "hi")
     
     if not transcript:

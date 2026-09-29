@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KhetRakshak AI (खेतरक्षक AI) — Bihar's Crop Risk Intelligence Platform</title>
-    <meta name="description" content="KhetRakshak AI is a Bihar-first agricultural risk intelligence platform combining Computer Vision, Machine Learning, GIS, weather intelligence and Generative AI. Built for IDEATEX Bootcamp, IIIT Bhagalpur.">
+    <title>KhetRakshak (खेतरक्षक) — Bihar's Crop Risk Intelligence & Early-Warning Platform</title>
+    <meta name="description" content="KhetRakshak is a Bihar-first agricultural risk intelligence platform combining Computer Vision, Machine Learning, GIS, weather intelligence and Generative AI to help farmers protect crop yields.">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -36,64 +37,116 @@
     <!-- Custom Stylesheet -->
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
-<body class="bg-slate-50 text-slate-900 pb-mobile-nav">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-mobile-nav transition-colors duration-200">
 
     <!-- Top Navigation Bar -->
     <nav class="glass-nav py-2.5 px-4 sm:px-6">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Brand & Emblem -->
             <div class="flex items-center gap-3 cursor-pointer" onclick="window.switchTab('dashboard')">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-800 to-emerald-600 flex items-center justify-center text-white text-xl shadow-md">
-                    🌾
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-800 to-emerald-600 flex items-center justify-center text-white shadow-md p-1.5 flex-shrink-0">
+                    <svg viewBox="0 0 48 48" fill="none" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Shield Boundary -->
+                        <path d="M24 4L8 10V22C8 33 15 42 24 45C33 42 40 33 40 22V10L24 4Z" fill="#15803d" stroke="#f59e0b" stroke-width="2.5"/>
+                        <!-- Golden ears of grain / wheat -->
+                        <path d="M24 12V34M24 16L20 14M24 20L28 18M24 24L20 22M24 28L28 26" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- Vibrant emerald leaf -->
+                        <path d="M24 24C28 20 34 22 34 28C34 32 30 35 24 35C24 35 26 28 24 24Z" fill="#34d399" opacity="0.9"/>
+                    </svg>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="font-extrabold text-lg text-emerald-950 tracking-tight" data-i18n="appName">KhetRakshak AI</span>
-                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            IDEATEX • IIIT Bhagalpur
+                        <span class="font-extrabold text-lg text-emerald-950 dark:text-emerald-300 tracking-tight" data-i18n="appName">KhetRakshak</span>
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-700">
+                            बिहार
                         </span>
                     </div>
-                    <p class="text-[11px] text-slate-500 hidden sm:block">Bihar's Crop Risk Intelligence & Early-Warning Platform</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block" data-i18n="tagline">Bihar's Crop Risk Intelligence & Early-Warning Platform</p>
                 </div>
             </div>
 
+            <!-- Top Right Action Controls -->
             <div class="flex items-center gap-2 sm:gap-3">
-                <!-- Location indicator -->
-                <div class="hidden md:flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-semibold text-slate-700 shadow-xs">
+                <!-- Location Chip Button -->
+                <button id="btn-open-location-modal" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:border-emerald-500 transition-all" title="Click to detect or change location">
                     <span class="text-emerald-600">📍</span>
-                    <span id="nav-location-label">Purnia, Bihar</span>
-                </div>
+                    <span id="nav-location-label">Detecting Location...</span>
+                </button>
 
-                <!-- Primary 1-Click Demo Button -->
-                <button id="btn-load-ideatex-demo" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-sm flex items-center gap-1.5 transition-all">
-                    <span>⚡</span>
-                    <span data-i18n="btnDemo">IDEATEX Demo</span>
+                <!-- Demo Accounts Modal Button -->
+                <button id="btn-open-demo-modal" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-sm flex items-center gap-1.5 transition-all">
+                    <span>👥</span>
+                    <span data-i18n="btnDemoAccounts">Demo Accounts</span>
+                </button>
+
+                <!-- Dark / Light Theme Toggle -->
+                <button id="btn-theme-toggle" class="p-2 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 flex items-center justify-center transition-all" title="Toggle Theme">
+                    <span id="theme-icon">🌙</span>
                 </button>
 
                 <!-- Language Toggle -->
-                <button id="btn-lang-toggle" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 flex items-center gap-1">
+                <button id="btn-lang-toggle" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 flex items-center gap-1">
                     <span>🌐</span>
                     <span id="lang-btn-text">English</span>
+                </button>
+
+                <!-- Farmer Account / Login Button -->
+                <button id="btn-open-auth-modal" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm flex items-center gap-1.5 transition-all">
+                    <span id="auth-btn-icon">🧑🌾</span>
+                    <span id="auth-btn-label">Login</span>
                 </button>
             </div>
         </div>
 
-        <!-- Desktop Navigation Tabs -->
-        <div class="max-w-7xl mx-auto hidden lg:flex items-center gap-1 mt-2.5 pt-2 border-t border-slate-100 overflow-x-auto text-xs font-medium text-slate-600">
-            <button class="nav-tab-btn active px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="dashboard" data-i18n="tabDashboard">Dashboard</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="scanner" data-i18n="tabScanner">📷 Crop Scanner</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="flood" data-i18n="tabFlood">🌊 Flood Risk</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="drought" data-i18n="tabDrought">☀️ Drought & Moisture</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="weather" data-i18n="tabWeather">🌦️ Weather-to-Crop</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="advisor" data-i18n="tabAdvisor">🤖 Ask Advisor</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="voice" data-i18n="tabVoice">🎙️ Voice AI</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="map" data-i18n="tabMap">🗺️ Bihar Risk Map</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="alerts" data-i18n="tabAlerts">🚨 Alerts</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="timeline" data-i18n="tabTimeline">📅 Timeline</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="profile" data-i18n="tabProfile">🧑🌾 My Farm</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="admin" data-i18n="tabAdmin">📊 Admin Surveillance</button>
-            <button class="nav-tab-btn px-3 py-1.5 rounded-md hover:text-emerald-700" data-tab="about" data-i18n="tabAbout">ℹ️ About / Impact</button>
+        <!-- Clean 4-Tab Navigation + 3-Dot Dropdown Menu -->
+        <div class="max-w-7xl mx-auto flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs font-medium text-slate-600 dark:text-slate-300">
+            <!-- 4 Primary Tabs -->
+            <div class="flex items-center gap-1 overflow-x-auto">
+                <button class="nav-tab-btn active px-3.5 py-1.5 rounded-md hover:text-emerald-700 flex items-center gap-1.5 font-bold" data-tab="dashboard">
+                    <span>🏠</span> <span data-i18n="tabDashboard">Dashboard</span>
+                </button>
+                <button class="nav-tab-btn px-3.5 py-1.5 rounded-md hover:text-emerald-700 flex items-center gap-1.5" data-tab="scanner">
+                    <span>📷</span> <span data-i18n="tabScanner">Crop Scan</span>
+                </button>
+                <button class="nav-tab-btn px-3.5 py-1.5 rounded-md hover:text-emerald-700 flex items-center gap-1.5" data-tab="risk">
+                    <span>⚠️</span> <span data-i18n="tabRisk">Risk</span>
+                </button>
+                <button class="nav-tab-btn px-3.5 py-1.5 rounded-md hover:text-emerald-700 flex items-center gap-1.5" data-tab="alerts">
+                    <span>🚨</span> <span data-i18n="tabAlerts">Alerts</span>
+                </button>
+            </div>
+
+            <!-- 3-Dot More Menu Dropdown -->
+            <div class="relative inline-block text-left" id="more-menu-container">
+                <button id="btn-more-menu" class="px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 font-bold text-slate-700 dark:text-slate-300 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                    <span class="text-base leading-none">⋮</span>
+                    <span data-i18n="tabMore">More</span>
+                </button>
+
+                <!-- Dropdown Card -->
+                <div id="more-menu-dropdown" class="hidden absolute right-0 mt-2 w-64 rounded-xl shadow-2xl bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 z-50 py-2 border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700">
+                    <div class="py-1">
+                        <button class="more-menu-item" data-tab="flood">🌊 <span data-i18n="tabFlood">Flood Risk</span></button>
+                        <button class="more-menu-item" data-tab="drought">☀️ <span data-i18n="tabDrought">Drought & Moisture</span></button>
+                        <button class="more-menu-item" data-tab="weather">🌦️ <span data-i18n="tabWeather">Weather-to-Crop</span></button>
+                        <button class="more-menu-item" data-tab="advisor">🤖 <span data-i18n="tabAdvisor">Ask Advisor</span></button>
+                        <button class="more-menu-item" data-tab="voice">🎙️ <span data-i18n="tabVoice">Voice AI</span></button>
+                        <button class="more-menu-item" data-tab="map">🗺️ <span data-i18n="tabMap">Bihar Risk Map</span></button>
+                        <button class="more-menu-item" data-tab="timeline">📅 <span data-i18n="tabTimeline">Farm Timeline</span></button>
+                        <button class="more-menu-item" data-tab="profile">🧑🌾 <span data-i18n="tabProfile">My Farm Profile</span></button>
+                        <button class="more-menu-item" data-tab="admin">📊 <span data-i18n="tabAdmin">Admin Surveillance</span></button>
+                        <button class="more-menu-item" data-tab="about">ℹ️ <span data-i18n="tabAbout">About KhetRakshak</span></button>
+                    </div>
+                    <div class="py-1">
+                        <button class="more-menu-action text-slate-700 dark:text-slate-300" id="more-btn-demo">👥 <span data-i18n="btnDemoAccounts">Demo Accounts</span></button>
+                        <button class="more-menu-action text-slate-700 dark:text-slate-300" id="more-btn-location">📍 <span data-i18n="btnChangeLocation">Change Location</span></button>
+                        <button class="more-menu-action text-red-600 dark:text-red-400" id="more-btn-logout">🚪 <span data-i18n="btnLogout">Logout</span></button>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
+
 
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
@@ -139,27 +192,27 @@
                 </div>
             </div>
 
-            <!-- Judge 2-Minute Quick Demo Journey Ribbon -->
-            <div class="mt-6 pt-5 border-t border-emerald-200/60 text-xs text-slate-600 flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-1 font-semibold text-emerald-900">
-                    <span>⏱️ IDEATEX Judge 2-Min Evaluation Journey:</span>
+            <!-- KhetRakshak End-to-End Workflow Ribbon -->
+            <div class="mt-6 pt-5 border-t border-emerald-200/60 dark:border-emerald-800/40 text-xs text-slate-600 dark:text-slate-300 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-1 font-semibold text-emerald-900 dark:text-emerald-300">
+                    <span>🌾 KhetRakshak Farmer Risk Intelligence Workflow:</span>
                 </div>
                 <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
-                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">1. Bihar Location</span>
+                    <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">1. Bihar Location</span>
                     <span>→</span>
-                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">2. Crop Stage</span>
+                    <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">2. Crop Stage</span>
                     <span>→</span>
-                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">3. Leaf Scan</span>
+                    <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">3. Leaf Scan</span>
                     <span>→</span>
-                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">4. CV Check</span>
+                    <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">4. CV Check</span>
                     <span>→</span>
-                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">5. Risk Score</span>
+                    <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">5. Risk Score</span>
                     <span>→</span>
-                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">6. Weather-to-Crop</span>
+                    <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">6. Weather-to-Crop</span>
                     <span>→</span>
-                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">7. Voice AI</span>
+                    <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">7. Voice AI</span>
                     <span>→</span>
-                    <span class="bg-white px-2 py-0.5 rounded border border-slate-200">8. GIS Map</span>
+                    <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">8. GIS Map</span>
                 </div>
             </div>
         </section>
@@ -167,18 +220,24 @@
         <!-- MODULE 1: FARMER DASHBOARD -->
         <section id="section-dashboard" class="app-section space-y-6">
             <!-- Farmer Profile Banner -->
-            <div class="kr-card p-5 flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-white via-white to-emerald-50/50">
+            <div class="kr-card p-5 flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-white via-white to-emerald-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/30">
                 <div>
-                    <div class="text-xs uppercase font-bold tracking-wider text-emerald-700" data-i18n="welcomeFarmer">Namaste, Farmer 👋</div>
-                    <h2 id="dash-farmer-name" class="text-2xl font-black text-slate-900 mt-0.5">Ramesh Kumar Yadav (Purnia, Bihar)</h2>
-                    <p id="dash-farm-meta" class="text-xs text-slate-600 mt-1">Maize • Flowering & Tasseling • 3.0 Acres • Sandy Loam Alluvium</p>
+                    <div class="text-xs uppercase font-bold tracking-wider text-emerald-700 dark:text-emerald-400" data-i18n="welcomeFarmer">Namaste, Farmer 👋</div>
+                    <h2 id="dash-farmer-name" class="text-2xl font-black text-slate-900 dark:text-slate-100 mt-0.5">Ramesh Kumar Yadav (Purnia, Bihar)</h2>
+                    <p id="dash-farm-meta" class="text-xs text-slate-600 dark:text-slate-400 mt-1">Maize • Flowering & Tasseling • 3.0 Acres • Sandy Loam Alluvium</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <select id="demo-scenario-select" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 shadow-xs">
-                        <option value="ideatex_purnia_maize">Scenario 1: Purnia Maize (Flowering + Heavy Rain)</option>
-                        <option value="gaya_drought_paddy">Scenario 2: Gaya Paddy (Drought & Water Deficit)</option>
-                        <option value="darbhanga_kamla_flood">Scenario 3: Darbhanga (Kamla River Flood + Blight)</option>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-slate-500 hidden sm:inline" data-i18n="lblDemoSelect">Scenario:</span>
+                    <select id="demo-scenario-select" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-xs cursor-pointer">
+                        <option value="demo_purnia_maize">🌽 1. Purnia (Ramesh Yadav — Maize Flowering, Rain/Flood)</option>
+                        <option value="demo_gaya_wheat">🌾 2. Gaya (Suresh Manjhi — Wheat Vegetative, Drought)</option>
+                        <option value="demo_bhagalpur_paddy">🌾 3. Bhagalpur (Arun Singh — Paddy Tillering, Ganga Flood)</option>
+                        <option value="demo_muzaffarpur_litchi">🍒 4. Muzaffarpur (Mukesh Chandra — Shahi Litchi, Fruit Borer)</option>
+                        <option value="demo_rohtas_paddy">🌾 5. Rohtas (Dharmendra Rai — Paddy/Wheat, Safe Irrigated)</option>
                     </select>
+                    <button onclick="window.openLocationModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700" title="Change Location">
+                        📍 <span data-i18n="btnChangeLocShort">Location</span>
+                    </button>
                 </div>
             </div>
 
@@ -337,21 +396,27 @@
                 <!-- Crop & Stage Selectors -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Select Crop Type:</label>
-                        <select id="scanner-crop-select" class="w-full px-3 py-2 rounded-lg text-sm bg-slate-50 border border-slate-300">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Select Crop Type:</label>
+                        <select id="scanner-crop-select" class="w-full px-3 py-2 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200">
                             <option value="Maize">Maize (मक्का)</option>
                             <option value="Paddy">Paddy / Rice (धान)</option>
                             <option value="Wheat">Wheat (गेहूं)</option>
                             <option value="Potato">Potato (आलू)</option>
                             <option value="Mustard">Mustard (सरसों)</option>
+                            <option value="Litchi">Shahi Litchi (शाही लीची)</option>
+                            <option value="Sugarcane">Sugarcane (गन्ना)</option>
+                            <option value="Banana">Banana (केला)</option>
+                            <option value="Pulses">Pulses / Lentils (दलहन)</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Growth Stage:</label>
-                        <select id="scanner-stage-select" class="w-full px-3 py-2 rounded-lg text-sm bg-slate-50 border border-slate-300">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Growth Stage:</label>
+                        <select id="scanner-stage-select" class="w-full px-3 py-2 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200">
                             <option value="Flowering & Tasseling">Flowering & Tasseling (मंजर / फूल)</option>
                             <option value="Vegetative">Vegetative (वानस्पतिक)</option>
+                            <option value="Tillering">Tillering / Branching (कल्ले निकलना)</option>
                             <option value="Grain Filling">Grain Filling (दाना भराव)</option>
+                            <option value="Fruit Development">Fruit Development (फल विकास)</option>
                             <option value="Germination">Germination / Seedling (अंकुरण)</option>
                         </select>
                     </div>
@@ -359,15 +424,15 @@
 
                 <!-- 1-Click Field Sample Chips (For easy testing without physical camera) -->
                 <div>
-                    <span class="block text-xs font-bold text-slate-600 mb-2">⚡ Quick Field Test Samples (Click to load):</span>
+                    <span class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">⚡ Quick Field Test Samples (Click to load):</span>
                     <div class="flex flex-wrap gap-2 text-xs">
-                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 font-medium ring-2 ring-emerald-500 bg-emerald-50" data-sample="maize_maydis_blight">
-                            🌽 Maize Maydis Blight (IDEATEX Demo)
+                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium ring-2 ring-emerald-500 bg-emerald-50" data-sample="maize_maydis_blight">
+                            🌽 Maize Maydis Leaf Blight
                         </button>
-                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 font-medium" data-sample="paddy_bacterial_blight">
+                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium" data-sample="paddy_bacterial_blight">
                             🌾 Paddy Bacterial Blight
                         </button>
-                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 font-medium" data-sample="healthy_maize">
+                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium" data-sample="healthy_maize">
                             🌱 Healthy Maize Leaf
                         </button>
                         <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-red-300 bg-red-50 text-red-800 hover:bg-red-100 font-medium" data-sample="blurry_leaf_sample">
@@ -375,6 +440,9 @@
                         </button>
                         <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-slate-400 bg-slate-100 text-slate-800 hover:bg-slate-200 font-medium" data-sample="dark_leaf_sample">
                             🌑 Dark Photo (Test Night Reject)
+                        </button>
+                        <button class="sample-image-chip px-3 py-1.5 rounded-lg border border-purple-300 bg-purple-50 text-purple-900 hover:bg-purple-100 font-medium" data-sample="non_crop_sample">
+                            🚫 Non-Crop Object (Test Non-Agricultural Image Rejection)
                         </button>
                     </div>
                 </div>
@@ -527,7 +595,7 @@
                 </div>
 
                 <div class="text-[11px] text-slate-500 italic p-3 bg-slate-100 rounded-lg">
-                    Notice: KhetRakshak AI acts as an agronomic decision-support layer. Official Disaster Management Department (DMD) alerts take legal precedence.
+                    Notice: KhetRakshak acts as an agronomic decision-support layer. Official Disaster Management Department (DMD) alerts take legal precedence.
                 </div>
             </div>
         </section>
@@ -996,32 +1064,32 @@
             </div>
         </section>
 
-        <!-- MODULE 13: ABOUT / IMPACT & IDEATEX DETAILS -->
+        <!-- MODULE 13: ABOUT / PRODUCT PHILOSOPHY & ARCHITECTURE -->
         <section id="section-about" class="app-section hidden space-y-6">
             <div class="kr-card p-6 sm:p-8 space-y-6">
                 <div class="border-b pb-4">
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold mb-2">
-                        <span>🏛️</span>
-                        <span>IDEATEX Bootcamp — Ideas × AI × Impact</span>
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 text-xs font-bold mb-2">
+                        <span>🌾</span>
+                        <span>Bihar Agricultural Risk Intelligence Platform</span>
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
-                        KhetRakshak AI — Product Philosophy & Architecture
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
+                        KhetRakshak — Product Philosophy & Architecture
                     </h2>
-                    <p class="text-xs text-slate-500 mt-1">
-                        Organized by Startup Cell × AI Club, Indian Institute of Information Technology (IIIT) Bhagalpur
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Empowering Bihar’s 38 Districts, Diverse Agro-Climatic Zones & Smallholder Farmers
                     </p>
                 </div>
 
-                <!-- Official Section 39 Product Description -->
-                <div class="p-5 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3">
-                    <h3 class="text-sm font-bold text-emerald-950 uppercase tracking-wider">Official Product Description:</h3>
-                    <p class="text-xs sm:text-sm text-emerald-900 leading-relaxed">
-                        KhetRakshak AI is a Bihar-first agricultural risk intelligence platform that combines Computer Vision, Machine Learning, GIS, weather intelligence and Generative AI to help farmers detect crop-health problems, understand flood and drought risks, and receive personalized, actionable recommendations in an accessible, voice-friendly interface.
+                <!-- Product Description -->
+                <div class="p-5 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl space-y-3">
+                    <h3 class="text-sm font-bold text-emerald-950 dark:text-emerald-300 uppercase tracking-wider">Product Vision & Purpose:</h3>
+                    <p class="text-xs sm:text-sm text-emerald-900 dark:text-emerald-200 leading-relaxed">
+                        KhetRakshak is a Bihar-first agricultural risk intelligence platform that combines Computer Vision, Machine Learning, GIS, weather intelligence and Generative AI to help farmers detect crop-health problems, understand flood and drought risks, and receive personalized, actionable recommendations in an accessible, voice-friendly interface.
                     </p>
-                    <p class="text-xs sm:text-sm text-emerald-900 leading-relaxed">
+                    <p class="text-xs sm:text-sm text-emerald-900 dark:text-emerald-200 leading-relaxed">
                         Instead of treating crop disease, weather and climate risks as separate problems, KhetRakshak connects them to understand what environmental conditions mean for a farmer’s specific crop and location.
                     </p>
-                    <p class="text-xs sm:text-sm text-emerald-950 font-bold">
+                    <p class="text-xs sm:text-sm text-emerald-950 dark:text-emerald-300 font-bold">
                         The goal is to move agricultural support from reactive diagnosis toward proactive risk awareness and decision support.
                     </p>
                 </div>
@@ -1053,7 +1121,7 @@
        │               │                │
        └───────────────┼────────────────┘
                        ▼
-                KHETRAKSHAK AI
+                  KHETRAKSHAK
                   RISK ENGINE
                        │
         ┌──────────────┼───────────────┐
@@ -1078,17 +1146,17 @@
 
                 <!-- Key Differentiator Summary -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
-                        <span class="font-bold text-slate-800 text-sm">🇮🇳 Bihar-First Focus</span>
-                        <p class="text-slate-600">Tailored to Kosi-Seemanchal flood inundations and South Bihar rain deficit realities.</p>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1.5">
+                        <span class="font-bold text-slate-800 dark:text-slate-200 text-sm">🇮🇳 Bihar-First Focus</span>
+                        <p class="text-slate-600 dark:text-slate-400">Tailored to Kosi-Seemanchal flood inundations and South Bihar rain deficit realities.</p>
                     </div>
-                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
-                        <span class="font-bold text-slate-800 text-sm">🧠 Multimodal AI</span>
-                        <p class="text-slate-600">Integrates leaf imagery + hydrological GIS telemetry + voice interaction seamlessly.</p>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1.5">
+                        <span class="font-bold text-slate-800 dark:text-slate-200 text-sm">🧠 Multimodal AI</span>
+                        <p class="text-slate-600 dark:text-slate-400">Integrates leaf imagery + hydrological GIS telemetry + voice interaction seamlessly.</p>
                     </div>
-                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
-                        <span class="font-bold text-slate-800 text-sm">🛡️ Responsible AI</span>
-                        <p class="text-slate-600">Low-confidence uncertainty thresholding refusing to fabricate diagnoses on blurry photos.</p>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1.5">
+                        <span class="font-bold text-slate-800 dark:text-slate-200 text-sm">🛡️ Responsible AI</span>
+                        <p class="text-slate-600 dark:text-slate-400">Low-confidence uncertainty thresholding refusing to fabricate diagnoses on blurry photos or non-crop objects.</p>
                     </div>
                 </div>
             </div>
@@ -1096,29 +1164,300 @@
 
     </main>
 
-    <!-- Mobile Bottom Navigation Bar (Farmer Friendly) -->
+    <!-- MODAL 1: AUTHENTICATION (LOGIN & REGISTRATION & DEMO ACCOUNTS) -->
+    <div id="modal-auth" class="kr-modal-backdrop">
+        <div class="kr-modal-dialog p-6 space-y-5">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🧑🌾</span>
+                    <h3 class="font-black text-lg text-slate-900 dark:text-slate-100" data-i18n="authModalTitle">खेतरक्षक किसान पोर्टल (Farmer Portal)</h3>
+                </div>
+                <button onclick="window.closeAuthModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1">✕</button>
+            </div>
+
+            <!-- Tabs: Login vs Register vs Demo -->
+            <div class="flex border-b border-slate-200 dark:border-slate-700 text-xs font-bold">
+                <button id="auth-tab-btn-login" class="flex-1 py-2.5 text-center text-emerald-700 border-b-2 border-emerald-600 font-extrabold" onclick="window.switchAuthTab('login')">
+                    लॉगिन (Login)
+                </button>
+                <button id="auth-tab-btn-register" class="flex-1 py-2.5 text-center text-slate-500 hover:text-slate-800" onclick="window.switchAuthTab('register')">
+                    नया पंजीकरण (Register)
+                </button>
+                <button id="auth-tab-btn-demo" class="flex-1 py-2.5 text-center text-slate-500 hover:text-slate-800" onclick="window.switchAuthTab('demo')">
+                    ⚡ डेमो खाते
+                </button>
+            </div>
+
+            <!-- Panel 1: Login Form -->
+            <div id="auth-panel-login" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">मोबाइल नंबर (Mobile Number)</label>
+                    <input type="tel" id="login-mobile" placeholder="जैसे: 9800011111" maxlength="10" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm bg-white dark:bg-slate-800">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">पासवर्ड या पिन (Password / PIN)</label>
+                    <input type="password" id="login-password" placeholder="पासवर्ड दर्ज करें" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm bg-white dark:bg-slate-800">
+                </div>
+                <button onclick="window.submitLogin()" class="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow-md transition-all">
+                    प्रवेश करें (Login)
+                </button>
+                <div class="text-center pt-2">
+                    <span class="text-xs text-slate-500">त्वरित जांच के लिए:</span>
+                    <button onclick="window.switchAuthTab('demo')" class="text-xs font-bold text-emerald-700 ml-1 hover:underline">1-क्लिक डेमो खाता चुनें →</button>
+                </div>
+            </div>
+
+            <!-- Panel 2: Register Form -->
+            <div id="auth-panel-register" class="hidden space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">किसान का नाम (Full Name) *</label>
+                        <input type="text" id="reg-name" placeholder="नाम दर्ज करें" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">मोबाइल नंबर (Mobile Number) *</label>
+                        <input type="tel" id="reg-mobile" placeholder="10 अंकों का नंबर" maxlength="10" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">पासवर्ड बनाएं (Password) *</label>
+                        <input type="password" id="reg-password" placeholder="सुरक्षित पासवर्ड" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">राज्य (State)</label>
+                        <input type="text" value="Bihar (बिहार)" disabled class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-slate-100 font-semibold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">जिला (District) *</label>
+                        <select id="reg-district" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 text-xs">
+                            <!-- Populated with 38 Bihar districts -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">प्रखंड (Block)</label>
+                        <input type="text" id="reg-block" placeholder="प्रखंड का नाम" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">गांव (Village)</label>
+                        <input type="text" id="reg-village" placeholder="गांव का नाम" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 text-xs">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">मुख्य फसल (Primary Crop) *</label>
+                        <select id="reg-crop" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 text-xs">
+                            <option value="Maize">Maize (मक्का)</option>
+                            <option value="Paddy">Paddy / Rice (धान)</option>
+                            <option value="Wheat">Wheat (गेहूं)</option>
+                            <option value="Litchi">Shahi Litchi (शाही लीची)</option>
+                            <option value="Potato">Potato (आलू)</option>
+                            <option value="Mustard">Mustard (सरसों)</option>
+                            <option value="Sugarcane">Sugarcane (गन्ना)</option>
+                            <option value="Banana">Banana (केला)</option>
+                            <option value="Pulses">Pulses (दलहन)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">रकबा (Land Area)</label>
+                        <div class="flex gap-1">
+                            <input type="number" id="reg-area" value="3.0" step="0.5" class="w-2/3 px-2.5 py-2 rounded-lg border border-slate-300 text-xs">
+                            <select id="reg-area-unit" class="w-1/3 px-1 py-2 rounded-lg border border-slate-300 text-[11px]">
+                                <option value="Acres">Acres</option>
+                                <option value="Bigha">बीघा</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">फसल अवस्था (Stage)</label>
+                        <select id="reg-stage" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 text-xs">
+                            <option value="Flowering & Tasseling">Flowering & Tasseling</option>
+                            <option value="Vegetative">Vegetative (वानस्पतिक)</option>
+                            <option value="Tillering">Tillering (कल्ले निकलना)</option>
+                            <option value="Grain Filling">Grain Filling (दाना भराव)</option>
+                            <option value="Fruit Development">Fruit Development</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="window.submitRegister()" class="w-full mt-2 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow-md transition-all">
+                    पंजीकरण करें एवं डैशबोर्ड पर जाएं (Register & Continue)
+                </button>
+            </div>
+
+            <!-- Panel 3: 1-Click Demo Accounts -->
+            <div id="auth-panel-demo" class="hidden space-y-2.5">
+                <p class="text-xs text-slate-500 mb-2">मूल्यांकन एवं त्वरित परीक्षण हेतु बिहार के 5 विविध कृषि-पारिस्थितिक परिदृश्यों में से चुनें:</p>
+                <div id="auth-demo-accounts-list" class="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: LOCATION SELECTOR (GPS AUTO-DETECT + BIHAR MANUAL FALLBACK) -->
+    <div id="modal-location" class="kr-modal-backdrop">
+        <div class="kr-modal-dialog p-6 space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📍</span>
+                    <h3 class="font-black text-lg text-slate-900 dark:text-slate-100">खेत का स्थान चुनें (Select Location)</h3>
+                </div>
+                <button onclick="window.closeLocationModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1">✕</button>
+            </div>
+
+            <!-- GPS Auto-Detect Button -->
+            <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-2">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-sm text-emerald-950 dark:text-emerald-200">GPS द्वारा स्वतः पहचानें (Auto-Detect GPS)</div>
+                        <div class="text-xs text-slate-500">ब्राउज़र लोकेशन अनुमति का उपयोग करके निकटतम बिहार जिला खोजें</div>
+                    </div>
+                    <button id="btn-detect-gps" onclick="window.detectLocationFromGPS()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                        <span>📡</span>
+                        <span>GPS से खोजें</span>
+                    </button>
+                </div>
+                <div id="gps-status-msg" class="text-xs font-semibold text-emerald-800 dark:text-emerald-300 hidden"></div>
+            </div>
+
+            <div class="relative flex py-1 items-center">
+                <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+                <span class="flex-shrink mx-4 text-xs font-bold uppercase tracking-wider text-slate-400">या मैन्युअल चुनें (Or Select Manually)</span>
+                <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+            </div>
+
+            <!-- Manual Hierarchy: State (Bihar) -> District (38) -> Block -> Village -->
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">राज्य (State)</label>
+                        <input type="text" value="Bihar (बिहार)" disabled class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-slate-100 font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">जिला (38 Districts) *</label>
+                        <select id="loc-select-district" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold">
+                            <!-- Populated with 38 Bihar districts -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">प्रखंड (Block)</label>
+                        <input type="text" id="loc-input-block" placeholder="प्रखंड का नाम दर्ज करें" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">गांव (Village)</label>
+                        <input type="text" id="loc-input-village" placeholder="गांव का नाम दर्ज करें" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs">
+                    </div>
+                </div>
+
+                <button onclick="window.saveManualLocation()" class="w-full mt-2 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow-md transition-all">
+                    स्थान सुरक्षित करें एवं मौसम अपडेट करें (Save Location)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: DEMO ACCOUNTS SELECTOR -->
+    <div id="modal-demo-accounts" class="kr-modal-backdrop">
+        <div class="kr-modal-dialog p-6 space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">👥</span>
+                    <h3 class="font-black text-lg text-slate-900 dark:text-slate-100">बिहार किसान डेमो परिदृश्य (Demo Accounts)</h3>
+                </div>
+                <button onclick="window.closeDemoModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1">✕</button>
+            </div>
+            <p class="text-xs text-slate-500">बिहार के अलग-अलग जिलों, फसलों और मौसम के जोखिमों को तुरंत जांचने के लिए किसी भी खाते पर क्लिक करें:</p>
+            <div id="modal-demo-list" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+                <!-- Injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: MOBILE MORE MENU DRAWER -->
+    <div id="modal-mobile-more" class="kr-modal-backdrop">
+        <div class="kr-modal-dialog p-5 space-y-4 max-w-sm">
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="font-bold text-base text-slate-900 dark:text-slate-100">🌾 खेतरक्षक सुविधाएं (All Features)</h3>
+                <button onclick="window.closeMobileMoreModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
+                <button class="p-3 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 rounded-xl text-left border border-slate-200 dark:border-slate-700 flex flex-col gap-1" onclick="window.switchTab('flood'); window.closeMobileMoreModal();">
+                    <span class="text-lg">🌊</span>
+                    <span>बाढ़ जोखिम (Flood)</span>
+                </button>
+                <button class="p-3 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 rounded-xl text-left border border-slate-200 dark:border-slate-700 flex flex-col gap-1" onclick="window.switchTab('drought'); window.closeMobileMoreModal();">
+                    <span class="text-lg">☀️</span>
+                    <span>सूखा तनाव (Drought)</span>
+                </button>
+                <button class="p-3 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 rounded-xl text-left border border-slate-200 dark:border-slate-700 flex flex-col gap-1" onclick="window.switchTab('weather'); window.closeMobileMoreModal();">
+                    <span class="text-lg">🌦️</span>
+                    <span>मौसम असर (Weather)</span>
+                </button>
+                <button class="p-3 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 rounded-xl text-left border border-slate-200 dark:border-slate-700 flex flex-col gap-1" onclick="window.switchTab('advisor'); window.closeMobileMoreModal();">
+                    <span class="text-lg">🤖</span>
+                    <span>सलाहकार (Advisor)</span>
+                </button>
+                <button class="p-3 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 rounded-xl text-left border border-slate-200 dark:border-slate-700 flex flex-col gap-1" onclick="window.switchTab('voice'); window.closeMobileMoreModal();">
+                    <span class="text-lg">🎙️</span>
+                    <span>आवाज AI (Voice)</span>
+                </button>
+                <button class="p-3 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 rounded-xl text-left border border-slate-200 dark:border-slate-700 flex flex-col gap-1" onclick="window.switchTab('map'); window.closeMobileMoreModal();">
+                    <span class="text-lg">🗺️</span>
+                    <span>बिहार मानचित्र (Map)</span>
+                </button>
+                <button class="p-3 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 rounded-xl text-left border border-slate-200 dark:border-slate-700 flex flex-col gap-1" onclick="window.switchTab('timeline'); window.closeMobileMoreModal();">
+                    <span class="text-lg">📅</span>
+                    <span>समय-सारणी (Timeline)</span>
+                </button>
+                <button class="p-3 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 rounded-xl text-left border border-slate-200 dark:border-slate-700 flex flex-col gap-1" onclick="window.switchTab('profile'); window.closeMobileMoreModal();">
+                    <span class="text-lg">🧑🌾</span>
+                    <span>मेरा खेत (My Farm)</span>
+                </button>
+            </div>
+            <div class="pt-2 border-t border-slate-200 dark:border-slate-700 flex gap-2">
+                <button onclick="window.openLocationModal(); window.closeMobileMoreModal();" class="flex-1 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200">
+                    📍 स्थान बदलें
+                </button>
+                <button onclick="window.openDemoModal(); window.closeMobileMoreModal();" class="flex-1 py-2 rounded-lg bg-amber-500 text-slate-950 text-xs font-bold">
+                    👥 डेमो खाते
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (4 Core + More) -->
     <div class="mobile-bottom-bar lg:hidden">
         <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-bold text-emerald-800" data-tab="dashboard">
             <span class="text-lg">📊</span>
-            <span>Dashboard</span>
+            <span data-i18n="tabDashboard">Dashboard</span>
         </button>
-        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600" data-tab="scanner">
+        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300" data-tab="scanner">
             <span class="text-lg">📷</span>
-            <span>Scanner</span>
+            <span data-i18n="tabScanner">Scanner</span>
         </button>
-        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600" data-tab="voice">
-            <span class="text-lg">🎙️</span>
-            <span>Voice AI</span>
+        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300" data-tab="risk">
+            <span class="text-lg">⚠️</span>
+            <span data-i18n="tabRisk">Risk</span>
         </button>
-        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600" data-tab="map">
-            <span class="text-lg">🗺️</span>
-            <span>Bihar Map</span>
+        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300" data-tab="alerts">
+            <span class="text-lg">🚨</span>
+            <span data-i18n="tabAlerts">Alerts</span>
         </button>
-        <button class="mobile-tab-btn flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600" data-tab="advisor">
-            <span class="text-lg">🤖</span>
-            <span>Advisor</span>
+        <button class="flex flex-col items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300" onclick="window.toggleMobileMoreModal()">
+            <span class="text-lg">⋮</span>
+            <span data-i18n="tabMore">More</span>
         </button>
     </div>
+
 
     <!-- Client Application Scripts -->
     <script src="/static/js/app.js"></script>
